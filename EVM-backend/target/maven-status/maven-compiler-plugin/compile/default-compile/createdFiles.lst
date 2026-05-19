@@ -1,0 +1,3 @@
+com\evm\backend\config\SeguridadConfig.class
+com\evm\backend\util\GeneradorHashesTemp.class
+com\evm\backend\EvmBackendApplication.class
