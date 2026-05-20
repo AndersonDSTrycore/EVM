@@ -1,0 +1,156 @@
+<p-toast />
+
+<p-dialog
+  [(visible)]="visible"
+  [header]="'Asignar usuarios — ' + (actividad?.nombre ?? '')"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="dialog-asignacion"
+  [style]="{ width: '760px' }"
+  (onHide)="cerrar()"
+>
+
+  <!-- Sección: Usuarios asignados -->
+  <section class="asignacion-seccion">
+    <h3 class="asignacion-seccion-titulo">
+      <i class="pi pi-users"></i> Usuarios asignados
+    </h3>
+
+    <p-table
+      [value]="asignaciones"
+      [loading]="cargandoAsignaciones"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '100%' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Cargo</th>
+          <th>Estado</th>
+          <th class="col-accion">Acción</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-asignacion>
+        <tr>
+          <td>{{ asignacion.nombreUsuario }}</td>
+          <td>{{ asignacion.correoUsuario }}</td>
+          <td>{{ asignacion.cargoUsuario }}</td>
+          <td>
+            <p-tag
+              [value]="asignacion.estadoAsignacion.nombre"
+              [severity]="obtenerSeveridadEstado(asignacion.estadoAsignacion.codigo)"
+            />
+          </td>
+          <td class="col-accion">
+            @if (esActiva(asignacion)) {
+              <p-button
+                label="Retirar"
+                icon="pi pi-user-minus"
+                severity="danger"
+                [text]="true"
+                [loading]="retirandoId === asignacion.id"
+                (onClick)="confirmarRetirar(asignacion)"
+                title="Retirar usuario de la actividad"
+              />
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="tabla-vacia">
+            <div class="estado-vacio">
+              <i class="pi pi-inbox estado-vacio-icon"></i>
+              <p class="estado-vacio-texto">No hay usuarios asignados a esta actividad.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+
+  <!-- Separador -->
+  <hr class="asignacion-separador" />
+
+  <!-- Sección: Usuarios disponibles -->
+  <section class="asignacion-seccion">
+    <div class="asignacion-seccion-header">
+      <h3 class="asignacion-seccion-titulo">
+        <i class="pi pi-user-plus"></i> Usuarios disponibles para asignar
+      </h3>
+      @if (seleccionados.length > 0) {
+        <p-button
+          [label]="'Asignar seleccionados (' + seleccionados.length + ')'"
+          icon="pi pi-check"
+          [loading]="asignando"
+          (onClick)="asignarSeleccionados()"
+        />
+      }
+    </div>
+
+    <p-table
+      [value]="disponibles"
+      [loading]="cargandoDisponibles"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '100%' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th class="col-check"></th>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Cargo</th>
+          <th>Rol</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-usuario>
+        <tr
+          [class.fila-seleccionada]="estaSeleccionado(usuario)"
+          (click)="toggleSeleccion(usuario)"
+          style="cursor: pointer;"
+        >
+          <td class="col-check">
+            <input
+              type="checkbox"
+              [checked]="estaSeleccionado(usuario)"
+              (change)="toggleSeleccion(usuario)"
+              (click)="$event.stopPropagation()"
+              class="checkbox-asignacion"
+            />
+          </td>
+          <td>{{ usuario.nombre }}</td>
+          <td>{{ usuario.correo }}</td>
+          <td>{{ usuario.cargo }}</td>
+          <td>{{ usuario.rol }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="tabla-vacia">
+            <div class="estado-vacio">
+              <i class="pi pi-check-circle estado-vacio-icon"></i>
+              <p class="estado-vacio-texto">Todos los usuarios activos ya están asignados a esta actividad.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cerrar"
+      icon="pi pi-times"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="cerrar()"
+    />
+  </ng-template>
+
+</p-dialog>

@@ -1,0 +1,130 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 1.5rem;
+  background: #ffffff;
+  border-bottom: 2px solid var(--color-primary);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.topbar-start {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.topbar-hamburger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-secondary);
+  transition: background 0.2s;
+}
+
+.topbar-hamburger:hover {
+  background: rgba(0, 160, 154, 0.1);
+  color: var(--color-primary);
+}
+
+.topbar-hamburger .pi {
+  font-size: 1.25rem;
+}
+
+.topbar-titulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  letter-spacing: 0.25px;
+}
+
+.topbar-end {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topbar-usuario {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.topbar-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-secondary);
+  border-radius: 50%;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.topbar-avatar .pi {
+  font-size: 1rem;
+}
+
+.topbar-usuario-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-nombre {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  line-height: 1.2;
+}
+
+.topbar-rol {
+  font-size: 0.6875rem;
+  color: var(--color-primary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.topbar-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(29, 39, 81, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.topbar-logout:hover {
+  background: rgba(29, 39, 81, 0.06);
+  border-color: var(--color-secondary);
+}
+
+.topbar-logout .pi {
+  font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .topbar-usuario-info {
+    display: none;
+  }
+
+  .topbar-logout-label {
+    display: none;
+  }
+}

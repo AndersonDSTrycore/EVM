@@ -1,0 +1,29 @@
+<div class="dashboard">
+
+  <div class="dashboard-header">
+    <div>
+      <h2 class="dashboard-bienvenida">
+        Bienvenido, <span class="dashboard-nombre">{{ usuario?.nombre }}</span>
+      </h2>
+      <p class="dashboard-rol">
+        <span class="rol-badge">{{ usuario?.rol }}</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <div class="dashboard-card" routerLink="/projects">
+      <div class="dashboard-card-icon">
+        <i class="pi pi-briefcase"></i>
+      </div>
+      <div class="dashboard-card-body">
+        <h3 class="dashboard-card-title">Proyectos</h3>
+        <p class="dashboard-card-desc">Gestiona los proyectos del sistema.</p>
+      </div>
+      <i class="pi pi-arrow-right dashboard-card-arrow"></i>
+    </div>
+
+  </div>
+
+</div>

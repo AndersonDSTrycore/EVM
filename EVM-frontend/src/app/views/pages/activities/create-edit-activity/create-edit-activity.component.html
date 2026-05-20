@@ -1,0 +1,153 @@
+<p-dialog
+  [(visible)]="visible"
+  [header]="modoEdicion ? 'Editar actividad' : 'Crear actividad'"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="dialog-actividad"
+  [style]="{ width: '600px' }"
+  (onHide)="cerrar()"
+>
+  <form [formGroup]="formulario" class="form-actividad">
+    <div class="grid grid-cols-12 gap-2">
+
+      <div class="col-span-12">
+        <p-floatlabel variant="in" class="w-full">
+          <input pInputText id="nombre" formControlName="nombre" autocomplete="off" class="w-full" />
+          <label for="nombre">Nombre <span class="campo-requerido">*</span></label>
+        </p-floatlabel>
+        @if (nombreInvalido) {
+          <small class="field-error">El nombre de la actividad es obligatorio.</small>
+        }
+      </div>
+  
+      <div class="col-span-12">
+        <p-floatlabel variant="in" class="w-full">
+          <textarea
+            pTextarea
+            id="descripcion"
+            formControlName="descripcion"
+            rows="3"
+            class="w-full"
+            autocomplete="off"
+          ></textarea>
+          <label for="descripcion">Descripción</label>
+        </p-floatlabel>
+      </div>
+  
+      <div class="col-span-12">
+        <p-floatlabel variant="in" class="w-full">
+          <p-inputnumber
+            inputId="bac"
+            formControlName="bac"
+            mode="decimal"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
+            [min]="0"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+          <label for="bac">BAC (Presupuesto) <span class="campo-requerido">*</span></label>
+        </p-floatlabel>
+        @if (bacInvalido) {
+          <small class="field-error">El BAC es obligatorio y debe ser mayor o igual a cero.</small>
+        }
+      </div>
+  
+      <div class="col-span-12 md:col-span-6">
+          <p-floatlabel variant="in" class="w-full">
+            <p-inputnumber
+              inputId="porcentajeAvancePlanificado"
+              formControlName="porcentajeAvancePlanificado"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              [min]="0"
+              [max]="100"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+            />
+            <label for="porcentajeAvancePlanificado">Avance planificado (%) <span class="campo-requerido">*</span></label>
+          </p-floatlabel>
+          @if (avancePlanificadoInvalido) {
+            <small class="field-error">Valor entre 0 y 100 requerido.</small>
+          }
+      </div>
+  
+      <div class="col-span-12 md:col-span-6">
+          <p-floatlabel variant="in" class="w-full">
+            <p-inputnumber
+              inputId="porcentajeAvanceReal"
+              formControlName="porcentajeAvanceReal"
+              mode="decimal"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              [min]="0"
+              [max]="100"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+            />
+            <label for="porcentajeAvanceReal">Avance real (%) <span class="campo-requerido">*</span></label>
+          </p-floatlabel>
+          @if (avanceRealInvalido) {
+            <small class="field-error">Valor entre 0 y 100 requerido.</small>
+          }
+      </div>
+  
+      <div class="col-span-12 md:col-span-6">
+          <p-floatlabel variant="in" class="w-full">
+            <p-datepicker
+              inputId="fechaInicio"
+              formControlName="fechaInicio"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              appendTo="body"
+              styleClass="w-full"
+            />
+            <label for="fechaInicio">Fecha inicio <span class="campo-requerido">*</span></label>
+          </p-floatlabel>
+          @if (fechaInicioInvalida) {
+            <small class="field-error">La fecha de inicio es obligatoria.</small>
+          }
+      </div>
+  
+      <div class="col-span-12 md:col-span-6">
+          <p-floatlabel variant="in" class="w-full">
+            <p-datepicker
+              inputId="fechaFin"
+              formControlName="fechaFin"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              appendTo="body"
+              styleClass="w-full"
+            />
+            <label for="fechaFin">Fecha fin <span class="campo-requerido">*</span></label>
+          </p-floatlabel>
+          @if (fechaFinInvalida) {
+            <small class="field-error">La fecha de fin es obligatoria.</small>
+          }
+          @if (fechaFinAnterior) {
+            <small class="field-error">La fecha de fin no puede ser anterior a la fecha de inicio.</small>
+          }
+      </div>
+    </div>
+
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      [text]="true"
+      severity="secondary"
+      (onClick)="cerrar()"
+    />
+    <p-button
+      [label]="modoEdicion ? 'Guardar cambios' : 'Crear actividad'"
+      icon="pi pi-check"
+      (onClick)="guardar()"
+      [loading]="guardando"
+    />
+  </ng-template>
+</p-dialog>

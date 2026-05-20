@@ -1,0 +1,193 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="projects-container">
+
+  <!-- Encabezado -->
+  <div class="projects-header">
+    <h2 class="projects-titulo">Projects</h2>
+    @if (esLider) {
+      <p-button
+        label="Crear proyecto"
+        icon="pi pi-plus"
+        (onClick)="abrirDialogCrear()"
+      />
+    }
+  </div>
+
+  <!-- Tabla de proyectos -->
+  <p-table
+    [value]="proyectos"
+    [loading]="cargando"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    styleClass="p-datatable-sm"
+    [tableStyle]="{ 'min-width': '60rem' }"
+    emptyMessage="No hay proyectos registrados."
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
+        <th>Estado</th>
+        <th pSortableColumn="fechaInicio">Fecha inicio <p-sortIcon field="fechaInicio" /></th>
+        <th pSortableColumn="fechaFin">Fecha fin <p-sortIcon field="fechaFin" /></th>
+        <th pSortableColumn="presupuestoTotal">Presupuesto total <p-sortIcon field="presupuestoTotal" /></th>
+        <th class="col-acciones">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-proyecto>
+      <tr [class.fila-cancelada]="esCancelado(proyecto)">
+        <td>{{ proyecto.nombre }}</td>
+        <td>
+          <p-tag
+            [value]="proyecto.estadoProyecto.nombre"
+            [severity]="obtenerSeveridadEstado(proyecto.estadoProyecto.codigo)"
+          />
+        </td>
+        <td>{{ proyecto.fechaInicio | date:'dd/MM/yyyy' }}</td>
+        <td>{{ proyecto.fechaFin | date:'dd/MM/yyyy' }}</td>
+        <td>{{ proyecto.presupuestoTotal | number:'1.2-2' }}</td>
+        <td class="col-acciones">
+          <p-button
+            icon="pi pi-ellipsis-v"
+            [text]="true"
+            severity="secondary"
+            (onClick)="abrirMenuProyecto($event, proyecto)"
+            title="Acciones"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="tabla-vacia">
+          <div class="estado-vacio">
+            <i class="pi pi-briefcase estado-vacio-icon"></i>
+            <p class="estado-vacio-texto">No hay proyectos registrados.</p>
+            @if (esLider) {
+              <p-button label="Crear primer proyecto" icon="pi pi-plus" (onClick)="abrirDialogCrear()" />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-menu #menuProyectos [model]="menuProyectosItems" [popup]="true" appendTo="body" />
+
+</div>
+
+<!-- Dialog crear / editar proyecto -->
+<p-dialog
+  [(visible)]="dialogVisible"
+  [header]="modoEdicion ? 'Editar proyecto' : 'Crear proyecto'"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="dialog-proyecto"
+  [style]="{ width: '560px' }"
+  (onHide)="cerrarDialog()"
+>
+  <form [formGroup]="formulario" class="form-proyecto">
+
+    <div class="field-wrapper">
+      <p-floatlabel variant="in">
+        <input pInputText id="nombre" formControlName="nombre" autocomplete="off" class="w-full" />
+        <label for="nombre">Nombre <span class="campo-requerido">*</span></label>
+      </p-floatlabel>
+      @if (nombreInvalido) {
+        <small class="field-error">El nombre del proyecto es obligatorio.</small>
+      }
+    </div>
+
+    <div class="field-wrapper">
+      <p-floatlabel variant="in">
+        <textarea
+          pTextarea
+          id="descripcion"
+          formControlName="descripcion"
+          rows="3"
+          class="w-full"
+          autocomplete="off"
+        ></textarea>
+        <label for="descripcion">Descripción</label>
+      </p-floatlabel>
+    </div>
+
+    <div class="fields-row">
+      <div class="field-wrapper">
+        <p-floatlabel variant="in">
+          <p-datepicker
+            inputId="fechaInicio"
+            formControlName="fechaInicio"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            appendTo="body"
+            styleClass="w-full"
+          />
+          <label for="fechaInicio">Fecha inicio <span class="campo-requerido">*</span></label>
+        </p-floatlabel>
+        @if (fechaInicioInvalida) {
+          <small class="field-error">La fecha de inicio es obligatoria.</small>
+        }
+      </div>
+
+      <div class="field-wrapper">
+        <p-floatlabel variant="in">
+          <p-datepicker
+            inputId="fechaFin"
+            formControlName="fechaFin"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            appendTo="body"
+            styleClass="w-full"
+          />
+          <label for="fechaFin">Fecha fin <span class="campo-requerido">*</span></label>
+        </p-floatlabel>
+        @if (fechaFinInvalida) {
+          <small class="field-error">La fecha de fin es obligatoria.</small>
+        }
+      </div>
+    </div>
+
+    <div class="field-wrapper">
+      <p-floatlabel variant="in">
+        <p-inputnumber
+          inputId="presupuestoTotal"
+          formControlName="presupuestoTotal"
+          mode="decimal"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          [min]="0"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+        />
+        <label for="presupuestoTotal">Presupuesto total <span class="campo-requerido">*</span></label>
+      </p-floatlabel>
+      @if (presupuestoInvalido) {
+        <small class="field-error">El presupuesto total es obligatorio y debe ser mayor o igual a cero.</small>
+      }
+    </div>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      [text]="true"
+      severity="secondary"
+      (onClick)="cerrarDialog()"
+    />
+    <p-button
+      [label]="modoEdicion ? 'Guardar cambios' : 'Crear proyecto'"
+      icon="pi pi-check"
+      (onClick)="guardar()"
+      [loading]="guardando"
+    />
+  </ng-template>
+</p-dialog>
+

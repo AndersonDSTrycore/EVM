@@ -1,0 +1,27 @@
+<div class="topbar">
+
+  <div class="topbar-start">
+    <button class="topbar-hamburger" (click)="toggleSidebar.emit()" title="Menú">
+      <i class="pi pi-bars"></i>
+    </button>
+    <span class="topbar-titulo">{{ tituloModulo }}</span>
+  </div>
+
+  <div class="topbar-end">
+    <div class="topbar-usuario">
+      <div class="topbar-avatar">
+        <i class="pi pi-user"></i>
+      </div>
+      <div class="topbar-usuario-info">
+        <span class="topbar-nombre">{{ nombreUsuario }}</span>
+        <span class="topbar-rol">{{ rolUsuario }}</span>
+      </div>
+    </div>
+
+    <button class="topbar-logout" (click)="cerrarSesion()" title="Cerrar sesión">
+      <i class="pi pi-sign-out"></i>
+      <span class="topbar-logout-label">Salir</span>
+    </button>
+  </div>
+
+</div>
