@@ -17,6 +17,7 @@ import { AssignUsersComponent } from './assign-users/assign-users.component';
 import { RegistroHorasComponent } from './registro-horas/registro-horas.component';
 
 import { TableModule } from 'primeng/table';
+import { Table } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -27,6 +28,7 @@ import { MessageModule } from 'primeng/message';
 import { InputTextModule } from 'primeng/inputtext';
 import { ChartModule } from 'primeng/chart';
 import { SkeletonModule } from 'primeng/skeleton';
+import { CardModule } from 'primeng/card';
 import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 
 @Component({
@@ -48,6 +50,7 @@ import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
     InputTextModule,
     ChartModule,
     SkeletonModule,
+    CardModule,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './activities.component.html',
@@ -65,11 +68,28 @@ export class ActivitiesComponent implements OnInit {
 
   @ViewChild('panelEvm') panelEvm!: ElementRef;
   @ViewChild('menuAcciones') menuAccionesRef!: Menu;
+  @ViewChild('tablaActividades') tablaActividadesRef!: Table;
   menuAccionesItems: MenuItem[] = [];
 
   abrirMenuAcciones(event: MouseEvent, actividad: ActividadResponse): void {
     this.menuAccionesItems = this.obtenerMenuAcciones(actividad);
     this.menuAccionesRef.toggle(event);
+  }
+
+  get actividadesFiltradas(): ActividadResponse[] {
+    if (!this.filtroIndicadores.trim()) return this.actividades;
+    const texto = this.filtroIndicadores.trim().toLowerCase();
+    return this.actividades.filter(
+      (a) => a.nombre.toLowerCase().includes(texto) || String(a.id).includes(texto),
+    );
+  }
+
+  limpiarFiltro(): void {
+    this.filtroIndicadores = '';
+    this.onFiltroChange('');
+    if (this.tablaActividadesRef) {
+      this.tablaActividadesRef.reset();
+    }
   }
 
   idProyecto!: number;
@@ -102,11 +122,13 @@ export class ActivitiesComponent implements OnInit {
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     this.idProyecto = idParam ? +idParam : 0;
-    this.inicializarChartOptions();
-    this.inicializarDebounce();
     this.cargarNombreProyecto();
     this.cargarActividades();
-    this.cargarIndicadores('');
+    if (this.esLider) {
+      this.inicializarChartOptions();
+      this.inicializarDebounce();
+      this.cargarIndicadores('');
+    }
   }
 
   cargarNombreProyecto(): void {
@@ -142,6 +164,14 @@ export class ActivitiesComponent implements OnInit {
         this.indicadores = data;
         this.construirChartData();
         this.cargandoIndicadores = false;
+        if (filtroTrimado && data.cantidadActividades === 0) {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Sin resultados',
+            detail: 'No se encontraron actividades que coincidan con el filtro ingresado.',
+            life: 4000,
+          });
+        }
       },
       error: () => {
         this.cargandoIndicadores = false;
@@ -361,15 +391,14 @@ export class ActivitiesComponent implements OnInit {
   }
 
   obtenerMenuAcciones(actividad: ActividadResponse): MenuItem[] {
-    const items: MenuItem[] = [
-      {
+    const items: MenuItem[] = [];
+
+    if (this.esLider) {
+      items.push({
         label: 'Ver estadísticas',
         icon: 'pi pi-chart-bar',
         command: () => this.onVerEstadisticas(actividad),
-      },
-    ];
-
-    if (this.esLider) {
+      });
       items.push({
         label: 'Editar actividad',
         icon: 'pi pi-pencil',
@@ -407,6 +436,12 @@ export class ActivitiesComponent implements OnInit {
             this.confirmarCancelar(actividad);
           }
         },
+      });
+    } else {
+      items.push({
+        label: 'Registrar horas',
+        icon: 'pi pi-clock',
+        command: () => this.abrirDialogRegistroHoras(actividad),
       });
     }
 

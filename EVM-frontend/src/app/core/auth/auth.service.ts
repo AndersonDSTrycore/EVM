@@ -6,7 +6,7 @@ import { LoginRequest, LoginResponse, UsuarioSesion } from '../models/auth.model
 
 const TOKEN_KEY = 'evm_token';
 const USUARIO_KEY = 'evm_usuario';
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:8081/api';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

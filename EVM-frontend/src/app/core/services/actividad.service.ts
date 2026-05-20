@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ActividadRequest, ActividadResponse } from '../models/actividad.models';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:8081/api';
 
 @Injectable({ providedIn: 'root' })
 export class ActividadService {

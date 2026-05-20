@@ -82,24 +82,31 @@
 
       <!-- Selector de usuario (solo líder) -->
       @if (esLider) {
-        <div class="rh-campo">
-          <p-floatlabel variant="in">
-            <p-select
-              inputId="idUsuario"
-              formControlName="idUsuario"
-              [options]="asignacionesActivas"
-              optionLabel="nombreUsuario"
-              optionValue="idUsuario"
-              placeholder=" "
-              [style]="{ width: '100%' }"
-              appendTo="body"
-            />
-            <label for="idUsuario">Usuario *</label>
-          </p-floatlabel>
-          @if (formulario.get('idUsuario')?.invalid && formulario.get('idUsuario')?.touched) {
-            <small class="rh-error">El usuario es obligatorio</small>
-          }
-        </div>
+        @if (asignacionesActivas.length === 0) {
+          <div class="rh-sin-usuarios">
+            <i class="pi pi-exclamation-circle rh-sin-usuarios-icon"></i>
+            <p class="rh-sin-usuarios-texto">No hay usuarios asignados activos a esta actividad. Asigna usuarios antes de registrar horas.</p>
+          </div>
+        } @else {
+          <div class="rh-campo">
+            <p-floatlabel variant="in">
+              <p-select
+                inputId="idUsuario"
+                formControlName="idUsuario"
+                [options]="asignacionesActivas"
+                optionLabel="nombreUsuario"
+                optionValue="idUsuario"
+                placeholder=" "
+                [style]="{ width: '100%' }"
+                appendTo="body"
+              />
+              <label for="idUsuario">Usuario *</label>
+            </p-floatlabel>
+            @if (formulario.get('idUsuario')?.invalid && formulario.get('idUsuario')?.touched) {
+              <small class="rh-error">El usuario es obligatorio</small>
+            }
+          </div>
+        }
       }
 
       <!-- Fecha de trabajo -->
@@ -126,15 +133,15 @@
           <p-inputnumber
             inputId="horasTrabajadas"
             formControlName="horasTrabajadas"
-            [minFractionDigits]="1"
-            [maxFractionDigits]="2"
-            [min]="0.01"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="0"
+            [min]="1"
             [style]="{ width: '100%' }"
           />
           <label for="horasTrabajadas">Horas trabajadas *</label>
         </p-floatlabel>
         @if (formulario.get('horasTrabajadas')?.invalid && formulario.get('horasTrabajadas')?.touched) {
-          <small class="rh-error">Las horas deben ser mayores a cero</small>
+          <small class="rh-error">Las horas deben ser un número entero mayor a cero</small>
         }
       </div>
 

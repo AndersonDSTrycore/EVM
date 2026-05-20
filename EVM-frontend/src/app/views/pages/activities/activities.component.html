@@ -13,6 +13,7 @@
     </div>
     @if (esLider) {
       <p-button
+        id="btn-crear-actividad"
         label="Crear actividad"
         icon="pi pi-plus"
         (onClick)="abrirDialogCrear()"
@@ -20,8 +21,9 @@
     }
   </div>
 
-  <!-- Panel de indicadores EVM -->
-  <div class="evm-panel" #panelEvm>
+  <!-- Panel de indicadores EVM (solo LIDER) -->
+  @if (esLider) {
+  <div class="evm-panel" id="panel-evm-actividades" #panelEvm>
     <div class="evm-panel-titulo">
       <span class="evm-panel-label"><i class="pi pi-chart-bar"></i> Indicadores EVM</span>
       <span class="evm-panel-subtitulo">Calculados dinámicamente · Sin persistencia</span>
@@ -31,12 +33,14 @@
     <div class="evm-filtro-wrapper">
       <input
         pInputText
+        id="filtro-actividades-input"
         class="evm-filtro-input"
         [(ngModel)]="filtroIndicadores"
         (ngModelChange)="onFiltroChange($event)"
         placeholder="Buscar actividad por ID o nombre"
       />
       <p-button
+        id="btn-buscar-actividades"
         icon="pi pi-search"
         label="Buscar"
         severity="secondary"
@@ -44,11 +48,12 @@
         (onClick)="onFiltroChange(filtroIndicadores)"
       />
       <p-button
+        id="btn-limpiar-actividades"
         icon="pi pi-times"
         label="Limpiar"
         severity="secondary"
         styleClass="evm-filter-action-btn"
-        (onClick)="filtroIndicadores = ''; onFiltroChange('')"
+        (onClick)="limpiarFiltro()"
       />
     </div>
 
@@ -176,11 +181,14 @@
       </div>
     }
   </div>
+  } <!-- fin @if esLider -->
 
   <!-- Tabla de actividades -->
-  <card>
+  <p-card id="card-tabla-actividades">
     <p-table
-      [value]="actividades"
+      #tablaActividades
+      id="tabla-actividades"
+      [value]="actividadesFiltradas"
       [loading]="cargando"
       [paginator]="true"
       [rows]="10"
@@ -246,7 +254,7 @@
     </p-table>
   
     <p-menu #menuAcciones [model]="menuAccionesItems" [popup]="true" appendTo="body" />
-  </card>
+  </p-card>
 
 </div>
 

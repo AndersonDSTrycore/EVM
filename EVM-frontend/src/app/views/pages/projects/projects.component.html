@@ -4,10 +4,11 @@
 <div class="projects-container">
 
   <!-- Encabezado -->
-  <div class="projects-header">
+  <div class="projects-header" id="cabecera-proyectos">
     <h2 class="projects-titulo">Projects</h2>
     @if (esLider) {
       <p-button
+        id="btn-crear-proyecto"
         label="Crear proyecto"
         icon="pi pi-plus"
         (onClick)="abrirDialogCrear()"
@@ -15,9 +16,40 @@
     }
   </div>
 
+  <!-- Filtro por nombre -->
+  <div class="projects-filtro-wrapper" id="filtro-proyectos-wrapper">
+    <input
+      pInputText
+      id="filtro-proyectos-input"
+      class="projects-filtro-input"
+      [(ngModel)]="filtroProyectos"
+      (ngModelChange)="onFiltroProyectosChange($event)"
+      placeholder="Buscar proyecto por nombre"
+    />
+    <p-button
+      id="btn-buscar-proyectos"
+      icon="pi pi-search"
+      label="Buscar"
+      severity="secondary"
+      styleClass="projects-filter-action-btn"
+      (onClick)="onFiltroProyectosChange(filtroProyectos)"
+    />
+    <p-button
+      id="btn-limpiar-proyectos"
+      icon="pi pi-times"
+      label="Limpiar"
+      severity="secondary"
+      styleClass="projects-filter-action-btn"
+      (onClick)="limpiarFiltroProyectos()"
+    />
+  </div>
+
   <!-- Tabla de proyectos -->
+  <p-card id="card-tabla-proyectos">
   <p-table
-    [value]="proyectos"
+    #tablaProyectos
+    id="tabla-proyectos"
+    [value]="proyectosFiltrados"
     [loading]="cargando"
     [paginator]="true"
     [rows]="10"
@@ -33,7 +65,7 @@
         <th pSortableColumn="fechaInicio">Fecha inicio <p-sortIcon field="fechaInicio" /></th>
         <th pSortableColumn="fechaFin">Fecha fin <p-sortIcon field="fechaFin" /></th>
         <th pSortableColumn="presupuestoTotal">Presupuesto total <p-sortIcon field="presupuestoTotal" /></th>
-        <th class="col-acciones">Acciones</th>
+        <th class="col-acciones col-acciones-sticky">Acciones</th>
       </tr>
     </ng-template>
 
@@ -49,8 +81,9 @@
         <td>{{ proyecto.fechaInicio | date:'dd/MM/yyyy' }}</td>
         <td>{{ proyecto.fechaFin | date:'dd/MM/yyyy' }}</td>
         <td>{{ proyecto.presupuestoTotal | number:'1.2-2' }}</td>
-        <td class="col-acciones">
+        <td class="col-acciones col-acciones-sticky">
           <p-button
+            id="btn-acciones-proyecto"
             icon="pi pi-ellipsis-v"
             [text]="true"
             severity="secondary"
@@ -75,6 +108,8 @@
       </tr>
     </ng-template>
   </p-table>
+
+  </p-card>
 
   <p-menu #menuProyectos [model]="menuProyectosItems" [popup]="true" appendTo="body" />
 

@@ -68,7 +68,7 @@ export class RegistroHorasComponent implements OnChanges {
   formulario = this.fb.group({
     idUsuario: [null as number | null, Validators.required],
     fechaTrabajo: [null as Date | null, Validators.required],
-    horasTrabajadas: [null as number | null, [Validators.required, Validators.min(0.01)]],
+    horasTrabajadas: [null as number | null, [Validators.required, Validators.min(1)]],
     descripcion: [''],
   });
 

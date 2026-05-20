@@ -1,12 +1,15 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProyectoService } from '../../../core/services/proyecto.service';
+import { ActividadService } from '../../../core/services/actividad.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ProyectoRequest, ProyectoResponse } from '../../../core/models/proyecto.models';
 
 import { TableModule } from 'primeng/table';
+import { Table } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -20,6 +23,7 @@ import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { Menu } from 'primeng/menu';
 import { MessageModule } from 'primeng/message';
+import { CardModule } from 'primeng/card';
 import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 
 @Component({
@@ -28,6 +32,7 @@ import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     TableModule,
     ButtonModule,
     DialogModule,
@@ -41,6 +46,7 @@ import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
     ToastModule,
     MenuModule,
     MessageModule,
+    CardModule,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './projects.component.html',
@@ -48,6 +54,7 @@ import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 })
 export class ProjectsComponent implements OnInit {
   private proyectoService = inject(ProyectoService);
+  private actividadService = inject(ActividadService);
   private authService = inject(AuthService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
@@ -74,7 +81,34 @@ export class ProjectsComponent implements OnInit {
   }
 
   @ViewChild('menuProyectos') menuProyectosRef!: Menu;
+  @ViewChild('tablaProyectos') tablaProyectosRef!: Table;
   menuProyectosItems: MenuItem[] = [];
+  filtroProyectos = '';
+
+  get proyectosFiltrados(): ProyectoResponse[] {
+    if (!this.filtroProyectos.trim()) return this.proyectos;
+    const texto = this.filtroProyectos.trim().toLowerCase();
+    return this.proyectos.filter((p) => p.nombre.toLowerCase().includes(texto));
+  }
+
+  onFiltroProyectosChange(valor: string): void {
+    this.filtroProyectos = valor;
+    if (valor.trim() && this.proyectosFiltrados.length === 0) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Sin resultados',
+        detail: 'No se encontraron proyectos que coincidan con el filtro ingresado.',
+        life: 4000,
+      });
+    }
+  }
+
+  limpiarFiltroProyectos(): void {
+    this.filtroProyectos = '';
+    if (this.tablaProyectosRef) {
+      this.tablaProyectosRef.reset();
+    }
+  }
 
   abrirMenuProyecto(event: MouseEvent, proyecto: ProyectoResponse): void {
     this.menuProyectosItems = this.obtenerMenuAcciones(proyecto);
@@ -184,6 +218,27 @@ export class ProjectsComponent implements OnInit {
   }
 
   confirmarCancelar(proyecto: ProyectoResponse): void {
+    this.actividadService.listarPorProyecto(proyecto.id).subscribe({
+      next: (actividades) => {
+        const activas = actividades.filter((a) => a.estadoActividad?.codigo === 'ACTIVA');
+        if (activas.length > 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'No se puede cancelar',
+            detail: `El proyecto tiene ${activas.length} actividad${activas.length !== 1 ? 'es' : ''} activa${activas.length !== 1 ? 's' : ''}. Cancélalas primero para poder cancelar el proyecto.`,
+            life: 6000,
+          });
+          return;
+        }
+        this.ejecutarCancelacion(proyecto);
+      },
+      error: () => {
+        this.ejecutarCancelacion(proyecto);
+      },
+    });
+  }
+
+  private ejecutarCancelacion(proyecto: ProyectoResponse): void {
     this.confirmationService.confirm({
       message: `¿Está seguro que desea cancelar el proyecto "<strong>${proyecto.nombre}</strong>"? Esta acción no se puede deshacer.`,
       header: 'Confirmar cancelación',

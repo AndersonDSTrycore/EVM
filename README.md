@@ -2211,3 +2211,35 @@ Al finalizar:
 6. Existe un *bug*: al dar clic en cualquier opción (tanto en proyectos como en actividades), la acción no funciona en el primer intento, pero sí en el segundo. Es necesario corregirlo.
 
 7. Crear una columna aparte para el **ID** de la actividad, llamada **“Código”**.
+---
+# Segundos ajustes
+---
+# Ajustes e implementación testing.
+
+1. El filtro actualmente esta actuando  "Panel de indicadores EVM" pero es necesario que se implemente también en "Tabla de actividades"
+A. El botón "Limpiar" también restablecerá los valores de la tabla, posicionando la en la primera pagina, reseteando la tabla, su sorf y su rowsizeperpage.
+
+2. Es necesesario que cada elemento relevante tenga su propio "id".
+A. Esencial para buttons, inputs, tablas, sections
+
+3. Estable un comportamiento similar en "Accinoes"  de proyectos de "Acciones" actividades, con ello  pretendemos que también la columna "Acciones" en proyectos sea fija ante scroll horizontal.
+
+4. En las tablas de proyectos y en Actividades agrega les un contenedor elemento "card" para tener un espaciado.
+
+5. Establece un filtro en proyectos por "nombre" del proyecto
+
+6. Necesito que me ayudes a implementar los spec faltantes en.
+A. Projects: 
+   * Evalua  las peticiones de ordenamiento y de filtro, controlemos comportamienos no deseados por falta de data.
+   *  Evalua y controlemos la acción de cancelar proyectos, no podemos cerrar un proyecto si tiene actividades activas.
+
+B. Activities:
+   * Evalua y controla la visualización de los indices, cuando no hay data disponible debe marcarce todo en "0"
+   * Evalua y controla la actividad en el filtro, si no se encuentra información debe salir una notificación indicando que no se encontraron registros coincidentes.
+   * Evalua y controla la tabla cuando no tenemos información disponible.
+   * Evalua y controla la visualización solo para el rol lider de las estadisticas.
+   
+C. Assign-users: Evalua para su control de cuando no tenemos  usuarios disponibles, 
+D. registro-horas: 
+   * Evalua y controla sus limites en campos, las horas tienen que ser en numero entero.
+   * Evalua cuando no  tenemos  usuarios asignados a esta actividad, debería indicar  que no existen usuarios asignados a esta tarea.
