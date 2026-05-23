@@ -1,0 +1,280 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="activities-container">
+
+  <!-- Encabezado -->
+  <div class="activities-header">
+    <div class="activities-titulo-wrapper">
+      <h2 class="activities-titulo">Actividades del proyecto</h2>
+      @if (nombreProyecto) {
+        <span class="activities-subtitulo">{{ nombreProyecto }}</span>
+      }
+    </div>
+    @if (esLider) {
+      <p-button
+        id="btn-crear-actividad"
+        label="Crear actividad"
+        icon="pi pi-plus"
+        (onClick)="abrirDialogCrear()"
+      />
+    }
+  </div>
+
+  <!-- Panel de indicadores EVM (solo LIDER) -->
+  @if (esLider) {
+  <div class="evm-panel" id="panel-evm-actividades" #panelEvm>
+    <div class="evm-panel-titulo">
+      <span class="evm-panel-label"><i class="pi pi-chart-bar"></i> Indicadores EVM</span>
+      <span class="evm-panel-subtitulo">Calculados dinámicamente · Sin persistencia</span>
+    </div>
+
+    <!-- Filtro -->
+    <div class="evm-filtro-wrapper">
+      <input
+        pInputText
+        id="filtro-actividades-input"
+        class="evm-filtro-input"
+        [(ngModel)]="filtroIndicadores"
+        (ngModelChange)="onFiltroChange($event)"
+        placeholder="Buscar actividad por ID o nombre"
+      />
+      <p-button
+        id="btn-buscar-actividades"
+        icon="pi pi-search"
+        label="Buscar"
+        severity="secondary"
+        styleClass="evm-filter-action-btn"
+        (onClick)="onFiltroChange(filtroIndicadores)"
+      />
+      <p-button
+        id="btn-limpiar-actividades"
+        icon="pi pi-times"
+        label="Limpiar"
+        severity="secondary"
+        styleClass="evm-filter-action-btn"
+        (onClick)="limpiarFiltro()"
+      />
+    </div>
+
+    <!-- Cargando -->
+    @if (cargandoIndicadores) {
+      <div class="evm-skeleton-grid">
+        <p-skeleton height="6rem" />
+        <p-skeleton height="6rem" />
+        <p-skeleton height="6rem" />
+        <p-skeleton height="6rem" />
+      </div>
+    } @else if (indicadores && indicadores.cantidadActividades === 0 && filtroIndicadores) {
+      <div class="evm-vacio">
+        <i class="pi pi-filter-slash evm-vacio-icon"></i>
+        <p>No se encontraron actividades para el filtro ingresado.</p>
+      </div>
+    } @else if (indicadores) {
+
+      <div class="evm-layout">
+
+        <!-- KPI: CPI, SPI, CV, SV, EAC, VAC -->
+        <section class="evm-section-kpi">
+          <div class="evm-card-principal evm-ind-cpi" [ngClass]="obtenerClaseEstado(indicadores.estadoCosto)">
+            <div class="evm-card-header">
+              <span class="evm-card-sigla">CPI</span>
+              <i [class]="obtenerIconoEstado(indicadores.estadoCosto)"></i>
+            </div>
+            <div class="evm-card-valor">{{ formatearIndice(indicadores.cpi) }}</div>
+            <div class="evm-card-nombre">Índice de Desempeño de Costo</div>
+            <div class="evm-card-interpretacion">{{ indicadores.interpretacionCosto }}</div>
+            <span class="evm-card-badge">{{ indicadores.estadoCosto }}</span>
+          </div>
+
+          <div class="evm-card-principal evm-ind-spi" [ngClass]="obtenerClaseEstado(indicadores.estadoCronograma)">
+            <div class="evm-card-header">
+              <span class="evm-card-sigla">SPI</span>
+              <i [class]="obtenerIconoEstado(indicadores.estadoCronograma)"></i>
+            </div>
+            <div class="evm-card-valor">{{ formatearIndice(indicadores.spi) }}</div>
+            <div class="evm-card-nombre">Índice de Desempeño de Cronograma</div>
+            <div class="evm-card-interpretacion">{{ indicadores.interpretacionCronograma }}</div>
+            <span class="evm-card-badge">{{ indicadores.estadoCronograma }}</span>
+          </div>
+
+          <div class="evm-card-sec evm-ind-cv">
+            <div class="evm-card-sec-sigla">CV</div>
+            <div class="evm-card-sec-nombre">Variación de Costo</div>
+            <div class="evm-card-sec-valor"
+                 [class.valor-positivo]="indicadores.cv >= 0"
+                 [class.valor-negativo]="indicadores.cv < 0">
+              {{ formatearMoneda(indicadores.cv) }}
+            </div>
+          </div>
+
+          <div class="evm-card-sec evm-ind-sv">
+            <div class="evm-card-sec-sigla">SV</div>
+            <div class="evm-card-sec-nombre">Variación de Cronograma</div>
+            <div class="evm-card-sec-valor"
+                 [class.valor-positivo]="indicadores.sv >= 0"
+                 [class.valor-negativo]="indicadores.sv < 0">
+              {{ formatearMoneda(indicadores.sv) }}
+            </div>
+          </div>
+
+          <div class="evm-card-sec evm-ind-eac">
+            <div class="evm-card-sec-sigla">EAC</div>
+            <div class="evm-card-sec-nombre">Estimación al Finalizar</div>
+            <div class="evm-card-sec-valor">{{ formatearMoneda(indicadores.eac) }}</div>
+          </div>
+
+          <div class="evm-card-sec evm-ind-vac">
+            <div class="evm-card-sec-sigla">VAC</div>
+            <div class="evm-card-sec-nombre">Variación al Finalizar</div>
+            <div class="evm-card-sec-valor"
+                 [class.valor-positivo]="indicadores.vac !== null && indicadores.vac >= 0"
+                 [class.valor-negativo]="indicadores.vac !== null && indicadores.vac < 0">
+              {{ formatearMoneda(indicadores.vac) }}
+            </div>
+          </div>
+        </section>
+
+        <!-- Resumen: BAC, PV, EV, AC -->
+        <article class="evm-article-resumen">
+          <div class="evm-resumen-item">
+            <span class="evm-resumen-sigla">BAC</span>
+            <span class="evm-resumen-nombre">Presupuesto Total</span>
+            <span class="evm-resumen-valor">{{ formatearMoneda(indicadores.bac) }}</span>
+          </div>
+          <div class="evm-resumen-item evm-resumen-pv">
+            <span class="evm-resumen-sigla">PV</span>
+            <span class="evm-resumen-nombre">Valor Planificado</span>
+            <span class="evm-resumen-valor">{{ formatearMoneda(indicadores.pv) }}</span>
+          </div>
+          <div class="evm-resumen-item evm-resumen-ev">
+            <span class="evm-resumen-sigla">EV</span>
+            <span class="evm-resumen-nombre">Valor Ganado</span>
+            <span class="evm-resumen-valor">{{ formatearMoneda(indicadores.ev) }}</span>
+          </div>
+          <div class="evm-resumen-item evm-resumen-ac">
+            <span class="evm-resumen-sigla">AC</span>
+            <span class="evm-resumen-nombre">Costo Real</span>
+            <span class="evm-resumen-valor">{{ formatearMoneda(indicadores.ac) }}</span>
+          </div>
+        </article>
+
+        <!-- Gráfico -->
+        @if (chartData) {
+          <div class="evm-chart-section">
+            <p class="evm-grafico-titulo">¿Lo ganado y lo planeado están alineados con lo gastado?</p>
+            <div class="evm-grafico-canvas">
+              <p-chart type="bar" [data]="chartData" [options]="chartOptions" />
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <div class="evm-footer">
+        <i class="pi pi-info-circle"></i>
+        Indicadores sobre <strong>{{ indicadores.cantidadActividades }}</strong>
+        actividad{{ indicadores.cantidadActividades !== 1 ? 'es' : '' }}
+        @if (indicadores.filtroAplicado) {
+          · filtradas por "<em>{{ indicadores.filtroAplicado }}</em>"
+        }
+      </div>
+    }
+  </div>
+  } <!-- fin @if esLider -->
+
+  <!-- Tabla de actividades -->
+  <p-card id="card-tabla-actividades">
+    <p-table
+      #tablaActividades
+      id="tabla-actividades"
+      [value]="actividadesFiltradas"
+      [loading]="cargando"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '70rem' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Código</th>
+          <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
+          <th>Estado</th>
+          <th pSortableColumn="bac">BAC <p-sortIcon field="bac" /></th>
+          <th pSortableColumn="porcentajeAvancePlanificado">Avance planificado <p-sortIcon field="porcentajeAvancePlanificado" /></th>
+          <th pSortableColumn="porcentajeAvanceReal">Avance real <p-sortIcon field="porcentajeAvanceReal" /></th>
+          <th pSortableColumn="fechaInicio">Fecha inicio <p-sortIcon field="fechaInicio" /></th>
+          <th pSortableColumn="fechaFin">Fecha fin <p-sortIcon field="fechaFin" /></th>
+          <th class="col-acciones col-acciones-sticky">Acciones</th>
+        </tr>
+      </ng-template>
+  
+      <ng-template pTemplate="body" let-actividad>
+        <tr [class.fila-cancelada]="esCancelada(actividad)">
+          <td class="col-codigo">{{ actividad.id }}</td>
+          <td>{{ actividad.nombre }}</td>
+          <td>
+            <p-tag
+              [value]="actividad.estadoActividad.nombre"
+              [severity]="obtenerSeveridadEstado(actividad.estadoActividad.codigo)"
+            />
+          </td>
+          <td>{{ actividad.bac | number:'1.2-2' }}</td>
+          <td>{{ actividad.porcentajeAvancePlanificado | number:'1.2-2' }}%</td>
+          <td>{{ actividad.porcentajeAvanceReal | number:'1.2-2' }}%</td>
+          <td>{{ actividad.fechaInicio | date:'dd/MM/yyyy' }}</td>
+          <td>{{ actividad.fechaFin | date:'dd/MM/yyyy' }}</td>
+          <td class="col-acciones col-acciones-sticky">
+            <p-button
+              icon="pi pi-ellipsis-v"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              (onClick)="abrirMenuAcciones($event, actividad)"
+              title="Acciones"
+            />
+          </td>
+        </tr>
+      </ng-template>
+  
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="tabla-vacia">
+            <div class="estado-vacio">
+              <i class="pi pi-list estado-vacio-icon"></i>
+              <p class="estado-vacio-texto">No hay actividades registradas para este proyecto.</p>
+              @if (esLider) {
+                <p-button label="Crear primera actividad" icon="pi pi-plus" (onClick)="abrirDialogCrear()" />
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  
+    <p-menu #menuAcciones [model]="menuAccionesItems" [popup]="true" appendTo="body" />
+  </p-card>
+
+</div>
+
+<app-create-edit-activity
+  [visible]="dialogVisible"
+  [modoEdicion]="modoEdicion"
+  [guardando]="guardando"
+  [actividad]="actividadEditando"
+  (guardarEvento)="onGuardar($event)"
+  (cerrarEvento)="onCerrar()"
+/>
+
+<app-assign-users
+  [visible]="dialogAsignacionVisible"
+  [actividad]="actividadAsignando"
+  (cerrarEvento)="cerrarDialogAsignacion()"
+/>
+
+<app-registro-horas
+  [(visible)]="dialogRegistroHorasVisible"
+  [actividad]="actividadRegistroHoras"
+  (cerrarEvento)="cerrarDialogRegistroHoras()"
+/>

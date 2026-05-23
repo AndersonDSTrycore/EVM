@@ -1,0 +1,14 @@
+<div class="layout-root">
+  <app-sidebar [colapsado]="sidebarColapsado" />
+
+  <div class="layout-body">
+    <app-topbar
+      [tituloModulo]="tituloModulo"
+      (toggleSidebar)="sidebarColapsado = !sidebarColapsado"
+    />
+
+    <main class="layout-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

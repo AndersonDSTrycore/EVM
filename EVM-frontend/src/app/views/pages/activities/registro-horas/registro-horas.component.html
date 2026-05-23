@@ -1,0 +1,176 @@
+<p-toast />
+
+<p-dialog
+  [(visible)]="visible"
+  [header]="'Reporte de horas — ' + (actividad?.nombre ?? '')"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="dialog-registro-horas"
+  [style]="{ width: '900px' }"
+  (onHide)="cerrar()"
+>
+
+  <!-- Tabla de registros -->
+  <section class="rh-seccion">
+    <h3 class="rh-seccion-titulo">
+      <i class="pi pi-clock"></i> Horas registradas
+    </h3>
+
+    <p-table
+      [value]="registros"
+      [loading]="cargandoRegistros"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '100%' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Usuario</th>
+          <th>Cargo</th>
+          <th>Fecha</th>
+          <th>Horas</th>
+          <th>Valor hora histórico</th>
+          <th>Costo total</th>
+          <th>Descripción</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-registro>
+        <tr>
+          <td>{{ registro.nombreUsuario }}</td>
+          <td>{{ registro.cargoUsuario }}</td>
+          <td>{{ registro.fechaTrabajo | date:'dd/MM/yyyy' }}</td>
+          <td>{{ registro.horasTrabajadas | number:'1.2-2' }}</td>
+          <td>{{ registro.valorHoraHistorico | number:'1.2-2' }}</td>
+          <td>{{ registro.costoTotal | number:'1.2-2' }}</td>
+          <td>{{ registro.descripcion ?? '—' }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="tabla-vacia">
+            <div class="estado-vacio">
+              <i class="pi pi-inbox estado-vacio-icon"></i>
+              <p class="estado-vacio-texto">No hay horas registradas para esta actividad.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="footer" *ngIf="registros.length > 0">
+        <tr class="rh-fila-totales">
+          <td colspan="3"><strong>Totales</strong></td>
+          <td><strong>{{ totalHoras | number:'1.2-2' }}</strong></td>
+          <td></td>
+          <td><strong>{{ totalCosto | number:'1.2-2' }}</strong></td>
+          <td></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+
+  <hr class="rh-separador" />
+
+  <!-- Formulario registrar horas -->
+  <section class="rh-seccion">
+    <h3 class="rh-seccion-titulo">
+      <i class="pi pi-plus-circle"></i> Registrar horas
+    </h3>
+
+    <form [formGroup]="formulario" (ngSubmit)="guardar()" class="rh-formulario">
+
+      <!-- Selector de usuario (solo líder) -->
+      @if (esLider) {
+        @if (asignacionesActivas.length === 0) {
+          <div class="rh-sin-usuarios">
+            <i class="pi pi-exclamation-circle rh-sin-usuarios-icon"></i>
+            <p class="rh-sin-usuarios-texto">No hay usuarios asignados activos a esta actividad. Asigna usuarios antes de registrar horas.</p>
+          </div>
+        } @else {
+          <div class="rh-campo">
+            <p-floatlabel variant="in">
+              <p-select
+                inputId="idUsuario"
+                formControlName="idUsuario"
+                [options]="asignacionesActivas"
+                optionLabel="nombreUsuario"
+                optionValue="idUsuario"
+                placeholder=" "
+                [style]="{ width: '100%' }"
+                appendTo="body"
+              />
+              <label for="idUsuario">Usuario *</label>
+            </p-floatlabel>
+            @if (formulario.get('idUsuario')?.invalid && formulario.get('idUsuario')?.touched) {
+              <small class="rh-error">El usuario es obligatorio</small>
+            }
+          </div>
+        }
+      }
+
+      <!-- Fecha de trabajo -->
+      <div class="rh-campo">
+        <p-floatlabel variant="in">
+          <p-datepicker
+            inputId="fechaTrabajo"
+            formControlName="fechaTrabajo"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [style]="{ width: '100%' }"
+            appendTo="body"
+          />
+          <label for="fechaTrabajo">Fecha de trabajo *</label>
+        </p-floatlabel>
+        @if (formulario.get('fechaTrabajo')?.invalid && formulario.get('fechaTrabajo')?.touched) {
+          <small class="rh-error">La fecha es obligatoria</small>
+        }
+      </div>
+
+      <!-- Horas trabajadas -->
+      <div class="rh-campo">
+        <p-floatlabel variant="in">
+          <p-inputnumber
+            inputId="horasTrabajadas"
+            formControlName="horasTrabajadas"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="0"
+            [min]="1"
+            [style]="{ width: '100%' }"
+          />
+          <label for="horasTrabajadas">Horas trabajadas *</label>
+        </p-floatlabel>
+        @if (formulario.get('horasTrabajadas')?.invalid && formulario.get('horasTrabajadas')?.touched) {
+          <small class="rh-error">Las horas deben ser un número entero mayor a cero</small>
+        }
+      </div>
+
+      <!-- Descripción -->
+      <div class="rh-campo rh-campo-full">
+        <p-floatlabel variant="in">
+          <textarea
+            pTextarea
+            id="descripcion"
+            formControlName="descripcion"
+            rows="2"
+            style="width: 100%"
+          ></textarea>
+          <label for="descripcion">Descripción (opcional)</label>
+        </p-floatlabel>
+      </div>
+
+      <!-- Botón guardar -->
+      <div class="rh-acciones">
+        <p-button
+          type="submit"
+          label="Registrar horas"
+          icon="pi pi-save"
+          [loading]="guardando"
+          [disabled]="formulario.invalid"
+        />
+      </div>
+
+    </form>
+  </section>
+
+</p-dialog>

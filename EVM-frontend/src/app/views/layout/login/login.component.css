@@ -1,0 +1,120 @@
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, #2a3870 60%, var(--color-tertiary) 100%);
+  padding: 1.5rem;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.login-brand {
+  text-align: center;
+  color: #ffffff;
+}
+
+.login-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--color-primary);
+  border-radius: 16px;
+  margin-bottom: 0.75rem;
+}
+
+.login-logo .pi {
+  font-size: 2rem;
+  color: #ffffff;
+}
+
+.login-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  letter-spacing: 0.5px;
+}
+
+.login-subtitle {
+  font-size: 0.875rem;
+  opacity: 0.75;
+  margin: 0;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.login-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  margin: 0 0 1.5rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.field-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field-wrapper p-floatlabel,
+.field-wrapper .p-floatlabel {
+  width: 100%;
+}
+
+.login-input {
+  width: 100%;
+}
+
+.login-password {
+  width: 100%;
+}
+
+:host ::ng-deep .login-password .p-password {
+  width: 100%;
+}
+
+:host ::ng-deep .login-password .p-password input {
+  width: 100%;
+}
+
+.field-error {
+  color: #e53935;
+  font-size: 0.75rem;
+}
+
+:host ::ng-deep .login-error {
+  width: 100%;
+}
+
+:host ::ng-deep .login-btn {
+  width: 100%;
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+}
+
+:host ::ng-deep .login-btn:hover:not(:disabled) {
+  background: #008e89 !important;
+  border-color: #008e89 !important;
+}

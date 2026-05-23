@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- =========================================================
+         002 - Datos semilla iniciales del sistema
+         Autor: evm-team
+         Fuente: /docs/02-modelo-base-datos.md
+         ========================================================= -->
+
+    <!-- Roles de sistema -->
+    <changeSet id="002-01-semilla-tbl-roles-sistema" author="evm-team">
+        <insert tableName="tbl_roles_sistema">
+            <column name="id" value="1"/>
+            <column name="codigo" value="LIDER"/>
+            <column name="nombre" value="Líder"/>
+            <column name="descripcion" value="Usuario con permisos para gestionar proyectos, actividades, asignaciones, registros de horas e indicadores generales."/>
+            <column name="activo" valueBoolean="true"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="tbl_roles_sistema">
+            <column name="id" value="2"/>
+            <column name="codigo" value="COLABORADOR"/>
+            <column name="nombre" value="Colaborador"/>
+            <column name="descripcion" value="Usuario con permisos para consultar actividades asignadas, registrar horas propias y consultar indicadores de sus actividades."/>
+            <column name="activo" valueBoolean="true"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <rollback>
+            <delete tableName="tbl_roles_sistema">
+                <where>codigo IN ('LIDER', 'COLABORADOR')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- Cargos -->
+    <changeSet id="002-02-semilla-tbl-cargos" author="evm-team">
+        <insert tableName="tbl_cargos">
+            <column name="id" value="1"/>
+            <column name="nombre" value="Líder de Proyecto"/>
+            <column name="descripcion" value="Cargo responsable de liderar proyectos, coordinar actividades y registrar seguimiento general."/>
+            <column name="valor_hora" value="150000.00"/>
+            <column name="activo" valueBoolean="true"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="tbl_cargos">
+            <column name="id" value="2"/>
+            <column name="nombre" value="Desarrollador Senior"/>
+            <column name="descripcion" value="Cargo técnico encargado de implementar funcionalidades de alta complejidad."/>
+            <column name="valor_hora" value="120000.00"/>
+            <column name="activo" valueBoolean="true"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="tbl_cargos">
+            <column name="id" value="3"/>
+            <column name="nombre" value="Desarrollador Junior"/>
+            <column name="descripcion" value="Cargo técnico encargado de apoyar la implementación de funcionalidades."/>
+            <column name="valor_hora" value="60000.00"/>
+            <column name="activo" valueBoolean="true"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="tbl_cargos">
+            <column name="id" value="4"/>
+            <column name="nombre" value="QA"/>
+            <column name="descripcion" value="Cargo encargado de pruebas funcionales, validación de calidad y reporte de hallazgos."/>
+            <column name="valor_hora" value="80000.00"/>
+            <column name="activo" valueBoolean="true"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="tbl_cargos">
+            <column name="id" value="5"/>
+            <column name="nombre" value="Analista Funcional"/>
+            <column name="descripcion" value="Cargo encargado de levantamiento, análisis y validación funcional."/>
+            <column name="valor_hora" value="90000.00"/>
+            <column name="activo" valueBoolean="true"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <rollback>
+            <delete tableName="tbl_cargos">
+                <where>nombre IN ('Líder de Proyecto', 'Desarrollador Senior', 'Desarrollador Junior', 'QA', 'Analista Funcional')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- Estados de usuarios -->
+    <changeSet id="002-03-semilla-tbl-estados-usuarios" author="evm-team">
+        <insert tableName="tbl_estados_usuarios">
+            <column name="id" value="1"/>
+            <column name="codigo" value="ACTIVO"/>
+            <column name="nombre" value="Activo"/>
+            <column name="descripcion" value="Usuario habilitado para ingresar y operar en el sistema."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_usuarios">
+            <column name="id" value="2"/>
+            <column name="codigo" value="INACTIVO"/>
+            <column name="nombre" value="Inactivo"/>
+            <column name="descripcion" value="Usuario deshabilitado administrativamente. No puede ingresar ni operar en el sistema."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_usuarios">
+            <column name="id" value="3"/>
+            <column name="codigo" value="BLOQUEADO"/>
+            <column name="nombre" value="Bloqueado"/>
+            <column name="descripcion" value="Usuario bloqueado por razones de seguridad o control administrativo."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <rollback>
+            <delete tableName="tbl_estados_usuarios">
+                <where>codigo IN ('ACTIVO', 'INACTIVO', 'BLOQUEADO')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- Estados de proyectos -->
+    <changeSet id="002-04-semilla-tbl-estados-proyectos" author="evm-team">
+        <insert tableName="tbl_estados_proyectos">
+            <column name="id" value="1"/>
+            <column name="codigo" value="ACTIVO"/>
+            <column name="nombre" value="Activo"/>
+            <column name="descripcion" value="Proyecto en ejecución y habilitado para gestionar actividades, asignaciones y registros de horas."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_proyectos">
+            <column name="id" value="2"/>
+            <column name="codigo" value="PAUSADO"/>
+            <column name="nombre" value="Pausado"/>
+            <column name="descripcion" value="Proyecto suspendido temporalmente. No debe permitir nuevas actividades ni registros operativos hasta ser reactivado."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_proyectos">
+            <column name="id" value="3"/>
+            <column name="codigo" value="FINALIZADO"/>
+            <column name="nombre" value="Finalizado"/>
+            <column name="descripcion" value="Proyecto terminado. Solo debe permitir consulta histórica e indicadores finales."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_proyectos">
+            <column name="id" value="4"/>
+            <column name="codigo" value="CANCELADO"/>
+            <column name="nombre" value="Cancelado"/>
+            <column name="descripcion" value="Proyecto cancelado. No debe permitir operación activa."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <rollback>
+            <delete tableName="tbl_estados_proyectos">
+                <where>codigo IN ('ACTIVO', 'PAUSADO', 'FINALIZADO', 'CANCELADO')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- Estados de actividades -->
+    <changeSet id="002-05-semilla-tbl-estados-actividades" author="evm-team">
+        <insert tableName="tbl_estados_actividades">
+            <column name="id" value="1"/>
+            <column name="codigo" value="PENDIENTE"/>
+            <column name="nombre" value="Pendiente"/>
+            <column name="descripcion" value="Actividad creada, pendiente de inicio."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_actividades">
+            <column name="id" value="2"/>
+            <column name="codigo" value="ACTIVA"/>
+            <column name="nombre" value="Activa"/>
+            <column name="descripcion" value="Actividad en ejecución y habilitada para registrar horas y asignaciones."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_actividades">
+            <column name="id" value="3"/>
+            <column name="codigo" value="PAUSADA"/>
+            <column name="nombre" value="Pausada"/>
+            <column name="descripcion" value="Actividad suspendida temporalmente. No permite registrar horas ni nuevas asignaciones."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_actividades">
+            <column name="id" value="4"/>
+            <column name="codigo" value="FINALIZADA"/>
+            <column name="nombre" value="Finalizada"/>
+            <column name="descripcion" value="Actividad cerrada operativamente. Solo permite consulta histórica e indicadores finales."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_actividades">
+            <column name="id" value="5"/>
+            <column name="codigo" value="CANCELADA"/>
+            <column name="nombre" value="Cancelada"/>
+            <column name="descripcion" value="Actividad cancelada. No permite operación activa."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <rollback>
+            <delete tableName="tbl_estados_actividades">
+                <where>codigo IN ('PENDIENTE', 'ACTIVA', 'PAUSADA', 'FINALIZADA', 'CANCELADA')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- Estados de asignaciones -->
+    <changeSet id="002-06-semilla-tbl-estados-asignaciones" author="evm-team">
+        <insert tableName="tbl_estados_asignaciones">
+            <column name="id" value="1"/>
+            <column name="codigo" value="ACTIVA"/>
+            <column name="nombre" value="Activa"/>
+            <column name="descripcion" value="Asignación vigente. El usuario puede registrar horas sobre la actividad."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <insert tableName="tbl_estados_asignaciones">
+            <column name="id" value="2"/>
+            <column name="codigo" value="RETIRADA"/>
+            <column name="nombre" value="Retirada"/>
+            <column name="descripcion" value="Asignación retirada. El usuario ya no puede registrar horas sobre la actividad."/>
+            <column name="activo" valueBoolean="true"/>
+        </insert>
+        <rollback>
+            <delete tableName="tbl_estados_asignaciones">
+                <where>codigo IN ('ACTIVA', 'RETIRADA')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- Usuarios iniciales -->
+    <!-- Las contraseñas están cifradas con BCrypt cost 10 -->
+    <!-- Admin123* y User123* son credenciales de ambiente local únicamente -->
+    <changeSet id="002-07-semilla-tbl-usuarios" author="evm-team">
+        <insert tableName="tbl_usuarios">
+            <column name="id" value="1"/>
+            <column name="id_rol_sistema" value="1"/>
+            <column name="id_cargo" value="1"/>
+            <column name="id_estado_usuario" value="1"/>
+            <column name="nombre" value="Líder Demo"/>
+            <column name="correo" value="lider.demo@evm.local"/>
+            <column name="contrasena" value="$2a$10$1OC1Eu5QUVuX9kAqgriei.LudVkExoTeKZQnWklTxA0qUhv5kJJ/G"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="tbl_usuarios">
+            <column name="id" value="2"/>
+            <column name="id_rol_sistema" value="2"/>
+            <column name="id_cargo" value="2"/>
+            <column name="id_estado_usuario" value="1"/>
+            <column name="nombre" value="Colaborador Demo"/>
+            <column name="correo" value="colaborador.demo@evm.local"/>
+            <column name="contrasena" value="$2a$10$V5T/bOTgZZIS22URtpgbau5DTpzp8XmsYqDE.HtCPoeerWFN0tM6S"/>
+            <column name="fecha_creacion" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="fecha_modificacion" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <rollback>
+            <delete tableName="tbl_usuarios">
+                <where>correo IN ('lider.demo@evm.local', 'colaborador.demo@evm.local')</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

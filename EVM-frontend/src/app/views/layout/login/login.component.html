@@ -1,0 +1,66 @@
+<div class="login-wrapper">
+  <div class="login-container">
+
+    <div class="login-brand">
+      <div class="login-logo">
+        <i class="pi pi-chart-line"></i>
+      </div>
+      <h1 class="login-title">EVM System</h1>
+      <p class="login-subtitle">Gestión de Valor Ganado</p>
+    </div>
+
+    <div class="login-card">
+      <h2 class="login-card-title">Iniciar sesión</h2>
+
+      <form [formGroup]="formulario" (ngSubmit)="iniciarSesion()" class="login-form">
+
+        <div class="field-wrapper">
+          <p-floatlabel variant="in">
+            <input
+              pInputText
+              id="correo"
+              formControlName="correo"
+              autocomplete="off"
+              class="login-input"
+            />
+            <label for="correo">Correo electrónico</label>
+          </p-floatlabel>
+          @if (correoInvalido) {
+            <small class="field-error">Ingrese un correo válido.</small>
+          }
+        </div>
+
+        <div class="field-wrapper">
+          <p-floatlabel variant="in">
+            <p-password
+              inputId="contrasena"
+              formControlName="contrasena"
+              [feedback]="false"
+              [toggleMask]="true"
+              styleClass="login-password"
+              inputStyleClass="login-input"
+            />
+            <label for="contrasena">Contraseña</label>
+          </p-floatlabel>
+          @if (contrasenaInvalida) {
+            <small class="field-error">La contraseña es requerida.</small>
+          }
+        </div>
+
+        @if (mensajeError) {
+          <p-message severity="error" [text]="mensajeError" styleClass="login-error" />
+        }
+
+        <p-button
+          type="submit"
+          label="Iniciar sesión"
+          styleClass="login-btn"
+          [loading]="cargando"
+          [disabled]="cargando"
+        />
+
+      </form>
+    </div>
+
+  </div>
+</div>

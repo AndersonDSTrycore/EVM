@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:55433/evm_db
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+jwt:
+  secreto: 8F3A2C1D9E7B4F6A0C5E2D8F1A3B9C7D4E0F6A2B5C8D1E3F7A0B4C6D9E2F5A1B
+  expiracion-ms: 86400000
+
+server:
+  port: 8082
+
+logging:
+  level:
+    liquibase: INFO
+    com.evm.backend: DEBUG

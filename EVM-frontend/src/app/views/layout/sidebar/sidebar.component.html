@@ -1,0 +1,25 @@
+<aside class="sidebar" [class.sidebar--collapsed]="colapsado">
+
+  <div class="sidebar-header">
+    @if (!colapsado) {
+      <span class="sidebar-brand">EVM System</span>
+    }
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (item of menuItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="sidebar-item--active"
+        class="sidebar-item"
+        [title]="colapsado ? item.label : ''"
+      >
+        <i [class]="item.icon + ' sidebar-item-icon'"></i>
+        @if (!colapsado) {
+          <span class="sidebar-item-label">{{ item.label }}</span>
+        }
+      </a>
+    }
+  </nav>
+
+</aside>

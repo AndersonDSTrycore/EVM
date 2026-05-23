@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- =========================================================
+         001 - Creación de tablas del modelo de base de datos
+         Autor: evm-team
+         Fuente: /docs/02-modelo-base-datos.md
+         ========================================================= -->
+
+    <!-- tbl_roles_sistema -->
+    <changeSet id="001-01-crear-tbl-roles-sistema" author="evm-team">
+        <createTable tableName="tbl_roles_sistema">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="codigo" type="varchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_roles_sistema_codigo"/>
+            </column>
+            <column name="nombre" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="activo" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_creacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_modificacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_cargos -->
+    <changeSet id="001-02-crear-tbl-cargos" author="evm-team">
+        <createTable tableName="tbl_cargos">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nombre" type="varchar(100)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_cargos_nombre"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="valor_hora" type="numeric(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activo" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_creacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_modificacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_estados_usuarios -->
+    <changeSet id="001-03-crear-tbl-estados-usuarios" author="evm-team">
+        <createTable tableName="tbl_estados_usuarios">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="codigo" type="varchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_estados_usuarios_codigo"/>
+            </column>
+            <column name="nombre" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="activo" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_estados_proyectos -->
+    <changeSet id="001-04-crear-tbl-estados-proyectos" author="evm-team">
+        <createTable tableName="tbl_estados_proyectos">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="codigo" type="varchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_estados_proyectos_codigo"/>
+            </column>
+            <column name="nombre" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="activo" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_estados_actividades -->
+    <changeSet id="001-05-crear-tbl-estados-actividades" author="evm-team">
+        <createTable tableName="tbl_estados_actividades">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="codigo" type="varchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_estados_actividades_codigo"/>
+            </column>
+            <column name="nombre" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="activo" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_estados_asignaciones -->
+    <changeSet id="001-06-crear-tbl-estados-asignaciones" author="evm-team">
+        <createTable tableName="tbl_estados_asignaciones">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="codigo" type="varchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_estados_asignaciones_codigo"/>
+            </column>
+            <column name="nombre" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="activo" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_usuarios -->
+    <changeSet id="001-07-crear-tbl-usuarios" author="evm-team">
+        <createTable tableName="tbl_usuarios">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_rol_sistema" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_usuarios_rol_sistema"
+                             references="tbl_roles_sistema(id)"/>
+            </column>
+            <column name="id_cargo" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_usuarios_cargo"
+                             references="tbl_cargos(id)"/>
+            </column>
+            <column name="id_estado_usuario" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_usuarios_estado_usuario"
+                             references="tbl_estados_usuarios(id)"/>
+            </column>
+            <column name="nombre" type="varchar(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="correo" type="varchar(200)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_usuarios_correo"/>
+            </column>
+            <column name="contrasena" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_creacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_modificacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_proyectos -->
+    <changeSet id="001-08-crear-tbl-proyectos" author="evm-team">
+        <createTable tableName="tbl_proyectos">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_estado_proyecto" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_proyectos_estado_proyecto"
+                             references="tbl_estados_proyectos(id)"/>
+            </column>
+            <column name="nombre" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="fecha_inicio" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_fin" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="presupuesto_total" type="numeric(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_creacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_modificacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_actividades -->
+    <changeSet id="001-09-crear-tbl-actividades" author="evm-team">
+        <createTable tableName="tbl_actividades">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_proyecto" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_actividades_proyecto"
+                             references="tbl_proyectos(id)"/>
+            </column>
+            <column name="id_estado_actividad" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_actividades_estado_actividad"
+                             references="tbl_estados_actividades(id)"/>
+            </column>
+            <column name="nombre" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="bac" type="numeric(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="porcentaje_avance_planificado" type="numeric(5,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="porcentaje_avance_real" type="numeric(5,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_inicio" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_fin" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_creacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_modificacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_asignaciones_actividades -->
+    <changeSet id="001-10-crear-tbl-asignaciones-actividades" author="evm-team">
+        <createTable tableName="tbl_asignaciones_actividades">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_actividad" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_asignaciones_actividad"
+                             references="tbl_actividades(id)"/>
+            </column>
+            <column name="id_usuario" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_asignaciones_usuario"
+                             references="tbl_usuarios(id)"/>
+            </column>
+            <column name="id_estado_asignacion" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_asignaciones_estado_asignacion"
+                             references="tbl_estados_asignaciones(id)"/>
+            </column>
+            <column name="fecha_asignacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_retiro" type="timestamp"/>
+            <column name="fecha_creacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_modificacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- tbl_registros_horas -->
+    <changeSet id="001-11-crear-tbl-registros-horas" author="evm-team">
+        <createTable tableName="tbl_registros_horas">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_actividad" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_registros_horas_actividad"
+                             references="tbl_actividades(id)"/>
+            </column>
+            <column name="id_usuario" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_registros_horas_usuario"
+                             references="tbl_usuarios(id)"/>
+            </column>
+            <column name="id_usuario_registra" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_registros_horas_usuario_registra"
+                             references="tbl_usuarios(id)"/>
+            </column>
+            <column name="fecha_trabajo" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="horas_trabajadas" type="numeric(6,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valor_hora_historico" type="numeric(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="costo_total" type="numeric(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="descripcion" type="text"/>
+            <column name="fecha_creacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fecha_modificacion" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

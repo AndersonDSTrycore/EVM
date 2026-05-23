@@ -1,0 +1,21 @@
+@import "./tailwind.generated.css";
+@import "primeicons/primeicons.css";
+
+:root {
+  --color-primary: #00a09a;
+  --color-primary-hover: #008e89;
+  --color-primary-light: rgba(0, 160, 154, 0.1);
+  --color-secondary: #1d2751;
+  --color-secondary-hover: #16203f;
+  --color-tertiary: #0078c1;
+  --color-tertiary-light: rgba(0, 120, 193, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
