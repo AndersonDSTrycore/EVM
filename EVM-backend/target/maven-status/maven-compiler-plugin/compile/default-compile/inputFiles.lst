@@ -1,4 +1,6 @@
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\config\SeguridadConfig.java
+C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\config\WebSocketChannelInterceptor.java
+C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\config\WebSocketConfig.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\domain\Actividad.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\domain\AsignacionActividad.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\domain\Cargo.java
@@ -20,6 +22,7 @@ C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\d
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\dto\CargoRequestDTO.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\dto\CargoResponseDTO.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\dto\EstadoCatalogoResponseDTO.java
+C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\dto\EventoWebSocketDTO.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\dto\IndicadoresEvmActividadResponseDTO.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\dto\IndicadoresEvmProyectoResponseDTO.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\dto\IndicadorEvmActividadDetalleDTO.java
@@ -73,3 +76,4 @@ C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\s
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\service\IndicadorEvmService.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\service\ProyectoService.java
 C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\service\RegistroHorasService.java
+C:\Users\Administrador\Documents\EVM\EVM-backend\src\main\java\com\evm\backend\service\WebSocketEventoService.java

@@ -8,6 +8,7 @@ import com.evm.backend.mapper.ProyectoMapper;
 import com.evm.backend.repository.EstadoProyectoRepository;
 import com.evm.backend.repository.ProyectoRepository;
 import com.evm.backend.service.ProyectoService;
+import com.evm.backend.service.WebSocketEventoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ public class ProyectoServiceImpl implements ProyectoService {
     private final ProyectoRepository proyectoRepository;
     private final EstadoProyectoRepository estadoProyectoRepository;
     private final ProyectoMapper proyectoMapper;
+    private final WebSocketEventoService webSocketEventoService;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,6 +74,8 @@ public class ProyectoServiceImpl implements ProyectoService {
 
         Proyecto guardado = proyectoRepository.save(proyecto);
         log.info("Proyecto creado con id={} nombre='{}'", guardado.getId(), guardado.getNombre());
+        webSocketEventoService.publicarEventoProyecto("PROYECTO_CREADO", guardado.getId(),
+                "Proyecto '" + guardado.getNombre() + "' creado.");
         return proyectoMapper.toResponseDTO(guardado);
     }
 
@@ -97,6 +101,8 @@ public class ProyectoServiceImpl implements ProyectoService {
 
         Proyecto actualizado = proyectoRepository.save(proyecto);
         log.info("Proyecto actualizado id={} nombre='{}'", actualizado.getId(), actualizado.getNombre());
+        webSocketEventoService.publicarEventoProyecto("PROYECTO_ACTUALIZADO", actualizado.getId(),
+                "Proyecto '" + actualizado.getNombre() + "' actualizado.");
         return proyectoMapper.toResponseDTO(actualizado);
     }
 
@@ -123,6 +129,8 @@ public class ProyectoServiceImpl implements ProyectoService {
 
         Proyecto cancelado = proyectoRepository.save(proyecto);
         log.info("Proyecto cancelado id={} nombre='{}'", cancelado.getId(), cancelado.getNombre());
+        webSocketEventoService.publicarEventoProyecto("PROYECTO_CANCELADO", cancelado.getId(),
+                "Proyecto '" + cancelado.getNombre() + "' cancelado.");
         return proyectoMapper.toResponseDTO(cancelado);
     }
 

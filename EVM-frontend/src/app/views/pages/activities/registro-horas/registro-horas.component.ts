@@ -4,6 +4,7 @@ import {
   Output,
   EventEmitter,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
   inject,
 } from '@angular/core';
@@ -12,6 +13,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RegistroHorasService } from '../../../../core/services/registro-horas.service';
 import { AsignacionActividadService } from '../../../../core/services/asignacion-actividad.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { WebSocketService } from '../../../../core/services/web-socket.service';
 import { RegistroHorasResponse } from '../../../../core/models/registro-horas.models';
 import { AsignacionActividadResponse } from '../../../../core/models/asignacion.models';
 import { ActividadResponse } from '../../../../core/models/actividad.models';
@@ -47,10 +49,11 @@ import { MessageService } from 'primeng/api';
   templateUrl: './registro-horas.component.html',
   styleUrl: './registro-horas.component.css',
 })
-export class RegistroHorasComponent implements OnChanges {
+export class RegistroHorasComponent implements OnChanges, OnDestroy {
   private registroHorasService = inject(RegistroHorasService);
   private asignacionService = inject(AsignacionActividadService);
   private authService = inject(AuthService);
+  private webSocketService = inject(WebSocketService);
   private messageService = inject(MessageService);
   private fb = inject(FormBuilder);
 
@@ -87,10 +90,16 @@ export class RegistroHorasComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && this.visible && this.actividad) {
       this.cargarDatos();
+      this.suscribirWebSocket();
     }
     if (changes['visible'] && !this.visible) {
       this.resetFormulario();
+      this.cancelarSuscripcionWebSocket();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.cancelarSuscripcionWebSocket();
   }
 
   cargarDatos(): void {
@@ -182,6 +191,29 @@ export class RegistroHorasComponent implements OnChanges {
     this.resetFormulario();
     this.visibleChange.emit(false);
     this.cerrarEvento.emit();
+  }
+
+  private suscribirWebSocket(): void {
+    if (!this.actividad) return;
+    const clave = 'registro-horas-dialog-' + this.actividad.id;
+    const canal = `/topic/actividades/${this.actividad.id}/registros-horas`;
+    try {
+      this.webSocketService.suscribir(canal, clave).subscribe({
+        next: (evento) => {
+          if (evento.requiereRefresco) {
+            this.cargarRegistros();
+          }
+        },
+        error: (err) => console.error('[WS] Error en suscripción registros-horas dialog:', err),
+      });
+    } catch (err) {
+      console.error('[WS] No se pudo suscribir en registro-horas:', err);
+    }
+  }
+
+  private cancelarSuscripcionWebSocket(): void {
+    if (!this.actividad) return;
+    this.webSocketService.cancelarSuscripcion('registro-horas-dialog-' + this.actividad.id);
   }
 
   private resetFormulario(): void {

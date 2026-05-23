@@ -1,5 +1,25 @@
-# EVM
-Proyecto interno
+# *IA Utilizadas*
+OPEN AI GPT 5.5 – Rol: Ingeniero Analista de Proyectos.  
+COPILOT:  
+  * Ejecutor de agentes.  
+  * Uso de SPEC.  
+  * Agente principal: Claude Opus 4.6 High.  
+  * Uso de Playwright: Seguimiento de pruebas de la IA.  
+
+## Detalles
+
+### Entendimiento
+El modelo de negocio lo aprendí dialogando con la versión de Open AI GPT V5.5. Utilicé su modo de voz, lo que me permitió tener un mayor entendimiento interactivo.  
+
+### Decisiones separadas
+Debido a la planificación establecida, los cambios realizados fueron mínimos. Se tuvieron que hacer correcciones de diseño, ajustes de puertos y modificaciones en la implementación del websocket.  
+
+### Decisión arquitectónica
+Quise implementar una arquitectura de mensajería aplicando websockets, específicamente para proyectos y actividades.  
+
+### Reflexión para un próximo proyecto
+No tenía en mente el potencial de los SPEC ni su uso adecuado, además de las ventajas de Playwright para la solución de bugs. Definitivamente, una buena planificación, entendimiento y flujo del proyecto fueron claves, ya que, aunque este proyecto en particular tomó 3 días, anteriormente había intentado hacerlo con otro modelo que me consumió mucho tiempo y no fue funcional.  
+
 
 
 # Prompts ejecutados:
@@ -2243,3 +2263,898 @@ C. Assign-users: Evalua para su control de cuando no tenemos  usuarios disponibl
 D. registro-horas: 
    * Evalua y controla sus limites en campos, las horas tienen que ser en numero entero.
    * Evalua cuando no  tenemos  usuarios asignados a esta actividad, debería indicar  que no existen usuarios asignados a esta tarea.
+
+---
+---
+
+Actúa siguiendo estrictamente las instrucciones del repositorio.
+
+Estado actual:
+- Backend Spring Boot funciona.
+- JWT funciona.
+- Frontend Angular funciona.
+- Projects funciona.
+- Activities funciona.
+- Asignaciones funciona o debe respetarse.
+- Registro de horas funciona o debe respetarse.
+- Indicadores EVM pueden existir o deben respetarse.
+- Un intento anterior de WebSocket dejó la pantalla en blanco, por eso esta implementación debe ser incremental, segura y no invasiva.
+
+Objetivo:
+Implementar WebSocket para actualización en tiempo real de:
+
+- Proyectos.
+- Actividades.
+- Asignaciones.
+- Registros de horas.
+- Indicadores derivados cuando aplique.
+
+No implementar RabbitMQ.
+
+---
+
+# Regla principal
+
+WebSocket no debe reemplazar los endpoints REST.
+
+WebSocket debe enviar eventos livianos que indiquen qué cambió.
+
+El frontend, al recibir el evento, debe refrescar los datos usando los endpoints REST existentes.
+
+No enviar toda la data por WebSocket salvo datos mínimos del evento.
+
+---
+
+# Restricciones críticas para evitar pantalla en blanco
+
+1. No modificar rutas principales del frontend salvo lo estrictamente necesario.
+2. No modificar el layout visual actual.
+3. No modificar login.
+4. No modificar guards existentes salvo necesidad justificada.
+5. No inicializar WebSocket antes de que exista token JWT.
+6. No bloquear el arranque de la aplicación si WebSocket falla.
+7. Todo error de WebSocket debe capturarse y registrarse en consola sin romper la UI.
+8. Si WebSocket no conecta, la aplicación debe seguir funcionando con REST normal.
+9. No llamar WebSocket desde constructores de componentes.
+10. Inicializar WebSocket desde un método controlado después del login o desde el layout autenticado.
+11. Desconectar WebSocket al hacer logout.
+12. No crear estructura `features/`.
+
+---
+
+# Backend WebSocket
+
+Implementar WebSocket con Spring WebSocket + STOMP.
+
+Agregar dependencia solo si no existe:
+
+```text
+spring-boot-starter-websocket
+```
+
+Crear configuración:
+
+```text
+config/WebSocketConfig.java
+```
+
+Endpoint base:
+
+```text
+/ws
+```
+
+Usar SockJS si se considera necesario para compatibilidad.
+
+Configurar broker simple:
+
+```text
+/topic
+/queue
+```
+
+Prefijo de aplicación:
+
+```text
+/app
+```
+
+---
+
+# Seguridad WebSocket
+
+La conexión WebSocket debe validar JWT.
+
+Reglas:
+
+- El frontend debe enviar el token JWT al conectar.
+- El backend debe validar el token.
+- Si el token es inválido, rechazar la conexión o no permitir suscripción.
+- El handshake `/ws` puede permitirse en Spring Security, pero la sesión WebSocket debe validar token.
+- No permitir eventos a usuarios no autenticados.
+
+Importante:
+No romper el login ni los endpoints REST existentes.
+
+---
+
+# Canales requeridos
+
+Crear los siguientes canales:
+
+```text
+/topic/proyectos
+/topic/proyectos/{idProyecto}/actividades
+/topic/actividades/{idActividad}/asignaciones
+/topic/actividades/{idActividad}/registros-horas
+/topic/proyectos/{idProyecto}/indicadores
+```
+
+---
+
+# Eventos requeridos
+
+Eventos de proyectos:
+
+```text
+PROYECTO_CREADO
+PROYECTO_ACTUALIZADO
+PROYECTO_CANCELADO
+```
+
+Eventos de actividades:
+
+```text
+ACTIVIDAD_CREADA
+ACTIVIDAD_ACTUALIZADA
+ACTIVIDAD_CANCELADA
+```
+
+Eventos de asignaciones:
+
+```text
+USUARIO_ASIGNADO_ACTIVIDAD
+USUARIO_RETIRADO_ACTIVIDAD
+ASIGNACIONES_ACTUALIZADAS
+```
+
+Eventos de registros de horas:
+
+```text
+HORAS_REGISTRADAS
+REGISTROS_HORAS_ACTUALIZADOS
+```
+
+Eventos de indicadores:
+
+```text
+INDICADORES_RECALCULADOS
+```
+
+---
+
+# DTO de evento WebSocket
+
+Crear DTO backend:
+
+```text
+EventoWebSocketDTO
+```
+
+Estructura esperada:
+
+```json
+{
+  "tipoEvento": "HORAS_REGISTRADAS",
+  "idProyecto": 1,
+  "idActividad": 3,
+  "idAsignacion": null,
+  "idRegistroHoras": 10,
+  "mensaje": "Se registraron horas sobre la actividad.",
+  "fechaHora": "2026-05-19T10:30:00",
+  "requiereRefresco": true
+}
+```
+
+No enviar datos sensibles.
+
+---
+
+# Servicio backend de publicación
+
+Crear servicio:
+
+```text
+WebSocketEventoService
+```
+
+Responsabilidad:
+
+- Publicar eventos.
+- No contener lógica de negocio.
+- No calcular EVM.
+- Registrar logs.
+- No persistir eventos.
+
+Métodos sugeridos:
+
+```text
+publicarEventoProyecto(...)
+publicarEventoActividad(...)
+publicarEventoAsignacion(...)
+publicarEventoRegistroHoras(...)
+publicarEventoIndicadores(...)
+```
+
+---
+
+# Cuándo publicar eventos
+
+Publicar eventos únicamente después de operaciones exitosas.
+
+## Proyectos
+
+Después de crear, editar o cancelar proyecto, publicar en:
+
+```text
+/topic/proyectos
+```
+
+## Actividades
+
+Después de crear, editar o cancelar actividad, publicar en:
+
+```text
+/topic/proyectos/{idProyecto}/actividades
+/topic/proyectos/{idProyecto}/indicadores
+```
+
+## Asignaciones
+
+Después de asignar o retirar usuario, publicar en:
+
+```text
+/topic/actividades/{idActividad}/asignaciones
+```
+
+## Registros de horas
+
+Después de registrar horas, publicar en:
+
+```text
+/topic/actividades/{idActividad}/registros-horas
+/topic/proyectos/{idProyecto}/indicadores
+```
+
+---
+
+# Backend: reglas
+
+No publicar evento si la operación falla.
+
+No publicar evento antes de guardar correctamente.
+
+No crear nuevas tablas.
+
+No modificar Liquibase.
+
+No modificar contratos REST existentes.
+
+No mover lógica de negocio al WebSocket.
+
+No recalcular indicadores dentro del WebSocket.
+
+---
+
+# Frontend WebSocket
+
+Implementar servicio:
+
+```text
+src/app/core/services/web-socket.service.ts
+```
+
+Usar:
+
+```text
+@stomp/stompjs
+sockjs-client
+```
+
+Agregar dependencias solo si no existen.
+
+Responsabilidades:
+
+- Conectar después de login.
+- Reconectar si se pierde conexión.
+- Desconectar al logout.
+- Suscribirse a canales.
+- Cancelar suscripciones al salir de componentes.
+- Exponer eventos como Observables.
+- No romper la UI si falla la conexión.
+
+---
+
+# Inicialización segura en frontend
+
+No conectar WebSocket en `main.ts`.
+
+No conectar WebSocket en `app.config.ts`.
+
+No conectar WebSocket antes de tener token.
+
+Conectar desde:
+
+```text
+main-layout
+```
+
+o desde:
+
+```text
+AuthService después de login exitoso
+```
+
+La conexión debe ejecutarse así:
+
+```text
+si hay token -> conectar
+si no hay token -> no conectar
+```
+
+---
+
+# Suscripciones por pantalla
+
+## Projects
+
+En:
+
+```text
+/projects
+```
+
+Suscribirse a:
+
+```text
+/topic/proyectos
+```
+
+Al recibir:
+
+```text
+PROYECTO_CREADO
+PROYECTO_ACTUALIZADO
+PROYECTO_CANCELADO
+```
+
+Acción frontend:
+
+```text
+Refrescar GET /api/proyectos
+```
+
+---
+
+## Activities
+
+En:
+
+```text
+/projects/:id/activities
+```
+
+Suscribirse a:
+
+```text
+/topic/proyectos/{idProyecto}/actividades
+/topic/proyectos/{idProyecto}/indicadores
+```
+
+Al recibir evento de actividad:
+
+```text
+Refrescar GET /api/proyectos/{idProyecto}/actividades
+```
+
+Al recibir evento de indicadores:
+
+```text
+Refrescar GET /api/proyectos/{idProyecto}/indicadores
+```
+
+---
+
+## Asignaciones
+
+Cuando esté abierto el dialog de asignaciones de una actividad, suscribirse a:
+
+```text
+/topic/actividades/{idActividad}/asignaciones
+```
+
+Al recibir evento:
+
+```text
+Refrescar asignaciones actuales
+Refrescar usuarios disponibles
+```
+
+Al cerrar el dialog, cancelar esta suscripción.
+
+---
+
+## Registros de horas
+
+Cuando esté abierto el dialog de reporte de horas de una actividad, suscribirse a:
+
+```text
+/topic/actividades/{idActividad}/registros-horas
+```
+
+Al recibir evento:
+
+```text
+Refrescar registros de horas
+Refrescar totales
+Refrescar indicadores del proyecto si están visibles
+```
+
+Al cerrar el dialog, cancelar esta suscripción.
+
+---
+
+# Logout
+
+Al hacer logout:
+
+```text
+1. Desconectar WebSocket.
+2. Cancelar suscripciones.
+3. Limpiar token.
+4. Limpiar usuario.
+5. Redirigir a /login.
+```
+
+---
+
+# Manejo de errores frontend
+
+Si WebSocket falla:
+
+- Mostrar máximo un log en consola.
+- No mostrar pantalla en blanco.
+- No detener la carga de datos REST.
+- No romper navegación.
+- No lanzar errores sin capturar.
+
+La aplicación debe seguir funcionando aunque WebSocket esté apagado.
+
+---
+
+# Resultado esperado
+
+1. Backend compila.
+2. Backend arranca.
+3. Frontend compila.
+4. Login sigue funcionando.
+5. La pantalla no queda en blanco.
+6. `/projects` refresca proyectos en tiempo real.
+7. `/projects/:id/activities` refresca actividades en tiempo real.
+8. Dialog de asignaciones refresca asignaciones en tiempo real.
+9. Dialog de registros de horas refresca registros en tiempo real.
+10. Indicadores visibles se refrescan cuando cambian actividades u horas.
+11. Logout desconecta WebSocket.
+12. Si WebSocket falla, la aplicación sigue funcionando con REST.
+13. No se implementa RabbitMQ.
+
+---
+---
+
+Act as a senior Angular/Spring Boot engineer.
+
+We have a critical issue after adding WebSocket support:
+The frontend sometimes renders for a few seconds and then turns into a blank screen.
+
+Observation:
+While WebSocket changes were being adjusted, the screen reacted and displayed briefly, but then returned to a blank page.
+
+Goal:
+Use Playwright to reproduce, diagnose, and fix the WebSocket integration until the application can load, navigate, and log in successfully without showing a blank screen.
+
+Credentials to use:
+
+```text
+User: lider.demo@evm.local
+Password: Admin123*
+```
+
+---
+
+# Main objective
+
+Fix the WebSocket integration so that:
+
+1. The Angular app does not show a blank screen.
+2. The login page loads correctly.
+3. The user can log in successfully.
+4. After login, the dashboard loads correctly.
+5. Projects and activities continue working.
+6. WebSocket failures do not break the UI.
+7. REST functionality continues working even if WebSocket is disconnected or fails.
+
+---
+
+# Mandatory testing approach
+
+Use Playwright to test the frontend in the browser.
+
+Do not assume the fix works only because the project compiles.
+
+You must run browser-based tests until the user can successfully log in.
+
+Test with:
+
+```text
+User: lider.demo@evm.local
+Password: Admin123*
+```
+
+---
+
+# Required Playwright checks
+
+Create or update Playwright tests to validate:
+
+## 1. Application loads
+
+The app must open without a blank screen.
+
+Expected:
+
+```text
+/login page is visible
+login form is visible
+email input is visible
+password input is visible
+login button is visible
+```
+
+## 2. No critical console errors
+
+Capture browser console errors.
+
+The test must fail if there are uncaught runtime errors such as:
+
+```text
+Cannot read properties of undefined
+Cannot read properties of null
+WebSocket is not defined
+SockJS is not a constructor
+global is not defined
+process is not defined
+stompClient is undefined
+subscribe is not a function
+```
+
+Warnings are acceptable only if they do not break the UI.
+
+## 3. Login works
+
+The test must:
+
+1. Navigate to `/login`.
+2. Fill the email.
+3. Fill the password.
+4. Click login.
+5. Wait for navigation.
+6. Confirm the authenticated layout appears.
+
+Expected after login:
+
+```text
+dashboard is visible
+sidebar is visible
+topbar is visible
+authenticated user information is visible
+```
+
+## 4. Projects page works
+
+After login, navigate to:
+
+```text
+/projects
+```
+
+Expected:
+
+```text
+Projects page loads
+table or empty state is visible
+no blank screen
+no uncaught runtime errors
+```
+
+## 5. Activities page works
+
+If there is at least one project, navigate to:
+
+```text
+/projects/{id}/activities
+```
+
+Expected:
+
+```text
+Activities page loads
+table or empty state is visible
+EVM section does not break the screen
+no blank screen
+no uncaught runtime errors
+```
+
+---
+
+# WebSocket stabilization rules
+
+The WebSocket implementation must be defensive.
+
+The application must continue working even if WebSocket fails.
+
+Apply these rules:
+
+1. Do not connect WebSocket in constructors.
+2. Do not connect WebSocket before a valid JWT token exists.
+3. Do not connect WebSocket from `main.ts`.
+4. Do not connect WebSocket from `app.config.ts`.
+5. Do not block route rendering while WebSocket connects.
+6. Do not throw uncaught errors from WebSocket callbacks.
+7. Do not subscribe before the STOMP client is connected.
+8. Do not assume the token exists.
+9. Do not assume the WebSocket client exists.
+10. Do not assume subscriptions exist when unsubscribing.
+11. If WebSocket fails, log a controlled warning and keep the UI working.
+12. REST data loading must continue even if WebSocket is disabled or disconnected.
+
+---
+
+# Add a temporary feature flag
+
+Add a frontend configuration flag to disable WebSocket safely.
+
+Example:
+
+```ts
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8080/api',
+  websocketUrl: 'http://localhost:8080/ws',
+  websocketEnabled: false
+};
+```
+
+When:
+
+```ts
+websocketEnabled === false
+```
+
+The app must:
+
+```text
+not connect WebSocket
+not subscribe to topics
+not execute STOMP logic
+continue working normally with REST
+```
+
+First make the app pass Playwright tests with WebSocket disabled.
+
+Then enable WebSocket and fix the integration without breaking the app.
+
+---
+
+# WebSocket connection lifecycle
+
+The correct lifecycle is:
+
+```text
+Login successful
+  -> token stored
+  -> authenticated layout loads
+  -> if websocketEnabled is true, connect WebSocket
+  -> pages subscribe only to their own topics
+  -> on logout, unsubscribe and disconnect
+```
+
+Do not initialize WebSocket globally before login.
+
+---
+
+# Expected WebSocket behavior
+
+WebSocket should send lightweight events only.
+
+Do not send entire tables through WebSocket.
+
+Example event:
+
+```json
+{
+  "tipoEvento": "ACTIVIDAD_ACTUALIZADA",
+  "idProyecto": 1,
+  "idActividad": 5,
+  "mensaje": "Actividad actualizada.",
+  "requiereRefresco": true
+}
+```
+
+When the frontend receives an event, it should refresh data using existing REST endpoints.
+
+---
+
+# Topics expected
+
+Use these topics only where needed:
+
+```text
+/topic/proyectos
+/topic/proyectos/{idProyecto}/actividades
+/topic/actividades/{idActividad}/asignaciones
+/topic/actividades/{idActividad}/registros-horas
+/topic/proyectos/{idProyecto}/indicadores
+```
+
+Do not subscribe to all topics globally.
+
+---
+
+# Page-specific subscriptions
+
+## Projects page
+
+Subscribe only to:
+
+```text
+/topic/proyectos
+```
+
+On event:
+
+```text
+refresh GET /api/proyectos
+```
+
+## Activities page
+
+Subscribe only to:
+
+```text
+/topic/proyectos/{idProyecto}/actividades
+/topic/proyectos/{idProyecto}/indicadores
+```
+
+On event:
+
+```text
+refresh activities
+refresh indicators if visible
+```
+
+## Assignment dialog
+
+Subscribe only while the assignment dialog is open:
+
+```text
+/topic/actividades/{idActividad}/asignaciones
+```
+
+Unsubscribe when the dialog closes.
+
+## Time report dialog
+
+Subscribe only while the time report dialog is open:
+
+```text
+/topic/actividades/{idActividad}/registros-horas
+```
+
+Unsubscribe when the dialog closes.
+
+---
+
+# Backend checks
+
+Review the Spring Boot WebSocket configuration.
+
+Verify:
+
+1. REST endpoints still work.
+2. `/api/auth/login` is still public.
+3. JWT-protected REST endpoints still require token.
+4. WebSocket handshake does not break REST security.
+5. `/ws/**` is configured correctly.
+6. WebSocket security validates JWT without breaking the frontend.
+7. Backend logs controlled WebSocket errors.
+
+Do not modify database structure.
+
+Do not modify Liquibase.
+
+Do not create RabbitMQ integration.
+
+---
+
+# Frontend files to review
+
+Review and fix if needed:
+
+```text
+app.config.ts
+app.routes.ts
+main.ts
+environment files
+AuthService
+WebSocketService
+MainLayoutComponent
+Projects component
+Activities component
+Assignment dialog component
+Time report dialog component
+HTTP interceptor
+Auth guard
+```
+
+---
+
+# Playwright test expectations
+
+The final result must include a Playwright test or test flow that proves:
+
+```text
+1. /login loads
+2. login form is visible
+3. login succeeds with lider.demo@evm.local / Admin123*
+4. dashboard loads
+5. /projects loads
+6. no blank screen appears
+7. no uncaught browser errors occur
+```
+
+Run the test repeatedly after each fix until it passes.
+
+---
+
+# Do not finish until
+
+Do not consider the task complete until:
+
+1. The frontend no longer shows a blank screen.
+2. Playwright can log in successfully.
+3. The dashboard is visible after login.
+4. Projects page is accessible.
+5. No uncaught runtime error appears in the browser console.
+6. WebSocket can be disabled without breaking the app.
+7. WebSocket can be enabled without turning the screen blank.
+8. The application still works through REST if WebSocket fails.
+
+---
+
+# Important restrictions
+
+Do not implement new business features.
+
+Do not implement RabbitMQ.
+
+Do not recalculate EVM in the frontend.
+
+Do not modify database changelogs.
+
+Do not create new tables.
+
+Do not rewrite the whole frontend.
+
+Do not change the existing visual layout unless needed to fix the blank screen.
+
+Focus only on stabilizing WebSocket and proving it with Playwright.

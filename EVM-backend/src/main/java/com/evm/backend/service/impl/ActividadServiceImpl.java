@@ -10,6 +10,7 @@ import com.evm.backend.repository.ActividadRepository;
 import com.evm.backend.repository.EstadoActividadRepository;
 import com.evm.backend.repository.ProyectoRepository;
 import com.evm.backend.service.ActividadService;
+import com.evm.backend.service.WebSocketEventoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,7 @@ public class ActividadServiceImpl implements ActividadService {
     private final EstadoActividadRepository estadoActividadRepository;
     private final ProyectoRepository proyectoRepository;
     private final ActividadMapper actividadMapper;
+    private final WebSocketEventoService webSocketEventoService;
 
     @Override
     @Transactional(readOnly = true)
@@ -86,6 +88,10 @@ public class ActividadServiceImpl implements ActividadService {
 
         Actividad guardada = actividadRepository.save(actividad);
         log.info("Actividad creada con id={} nombre='{}' para proyecto id={}", guardada.getId(), guardada.getNombre(), idProyecto);
+        webSocketEventoService.publicarEventoActividad("ACTIVIDAD_CREADA", idProyecto, guardada.getId(),
+                "Actividad '" + guardada.getNombre() + "' creada en proyecto id=" + idProyecto);
+        webSocketEventoService.publicarEventoIndicadores(idProyecto, guardada.getId(),
+                "Indicadores recalculados por nueva actividad.");
         return actividadMapper.toResponseDTO(guardada);
     }
 
@@ -110,6 +116,11 @@ public class ActividadServiceImpl implements ActividadService {
 
         Actividad actualizada = actividadRepository.save(actividad);
         log.info("Actividad actualizada id={} nombre='{}'", actualizada.getId(), actualizada.getNombre());
+        webSocketEventoService.publicarEventoActividad("ACTIVIDAD_ACTUALIZADA",
+                actualizada.getProyecto().getId(), actualizada.getId(),
+                "Actividad '" + actualizada.getNombre() + "' actualizada.");
+        webSocketEventoService.publicarEventoIndicadores(actualizada.getProyecto().getId(),
+                actualizada.getId(), "Indicadores recalculados por actualización de actividad.");
         return actividadMapper.toResponseDTO(actualizada);
     }
 
@@ -136,6 +147,11 @@ public class ActividadServiceImpl implements ActividadService {
 
         Actividad cancelada = actividadRepository.save(actividad);
         log.info("Actividad cancelada id={} nombre='{}'", cancelada.getId(), cancelada.getNombre());
+        webSocketEventoService.publicarEventoActividad("ACTIVIDAD_CANCELADA",
+                cancelada.getProyecto().getId(), cancelada.getId(),
+                "Actividad '" + cancelada.getNombre() + "' cancelada.");
+        webSocketEventoService.publicarEventoIndicadores(cancelada.getProyecto().getId(),
+                cancelada.getId(), "Indicadores recalculados por cancelación de actividad.");
         return actividadMapper.toResponseDTO(cancelada);
     }
 

@@ -13,6 +13,7 @@ import com.evm.backend.repository.AsignacionActividadRepository;
 import com.evm.backend.repository.EstadoAsignacionRepository;
 import com.evm.backend.repository.UsuarioRepository;
 import com.evm.backend.service.AsignacionActividadService;
+import com.evm.backend.service.WebSocketEventoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,7 @@ public class AsignacionActividadServiceImpl implements AsignacionActividadServic
     private final UsuarioRepository usuarioRepository;
     private final EstadoAsignacionRepository estadoAsignacionRepository;
     private final AsignacionActividadMapper asignacionMapper;
+    private final WebSocketEventoService webSocketEventoService;
 
     @Override
     @Transactional(readOnly = true)
@@ -109,6 +111,9 @@ public class AsignacionActividadServiceImpl implements AsignacionActividadServic
             log.info("Total de {} usuarios asignados a actividad id={}", nuevasAsignaciones.size(), idActividad);
         }
 
+        webSocketEventoService.publicarEventoAsignacion("USUARIO_ASIGNADO_ACTIVIDAD",
+                idActividad, null, dto.getIdsUsuarios().size() + " usuario(s) asignado(s) a actividad id=" + idActividad);
+
         return nuevasAsignaciones.stream()
                 .map(asignacionMapper::toResponseDTO)
                 .toList();
@@ -148,6 +153,11 @@ public class AsignacionActividadServiceImpl implements AsignacionActividadServic
                 asignacion.getUsuario() != null ? asignacion.getUsuario().getId() : null,
                 asignacion.getActividad() != null ? asignacion.getActividad().getId() : null,
                 idAsignacion);
+
+        webSocketEventoService.publicarEventoAsignacion("USUARIO_RETIRADO_ACTIVIDAD",
+                guardada.getActividad() != null ? guardada.getActividad().getId() : null,
+                guardada.getId(), "Usuario retirado de actividad id=" +
+                        (guardada.getActividad() != null ? guardada.getActividad().getId() : null));
 
         return asignacionMapper.toResponseDTO(guardada);
     }

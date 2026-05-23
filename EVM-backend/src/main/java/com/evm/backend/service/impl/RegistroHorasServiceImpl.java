@@ -7,6 +7,7 @@ import com.evm.backend.mapper.RegistroHorasMapper;
 import com.evm.backend.repository.*;
 import com.evm.backend.security.UsuarioAutenticado;
 import com.evm.backend.service.RegistroHorasService;
+import com.evm.backend.service.WebSocketEventoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,7 @@ public class RegistroHorasServiceImpl implements RegistroHorasService {
     private final UsuarioRepository usuarioRepository;
     private final AsignacionActividadRepository asignacionRepository;
     private final RegistroHorasMapper registroHorasMapper;
+    private final WebSocketEventoService webSocketEventoService;
 
     @Override
     @Transactional(readOnly = true)
@@ -126,6 +128,11 @@ public class RegistroHorasServiceImpl implements RegistroHorasService {
                 guardado.getId(), idActividad, idUsuarioTrabajo,
                 dto.getHorasTrabajadas(), valorHoraHistorico, costoTotal,
                 usuarioAutenticado.getId());
+
+        Long idProyecto = actividad.getProyecto() != null ? actividad.getProyecto().getId() : null;
+        webSocketEventoService.publicarEventoRegistroHoras("HORAS_REGISTRADAS",
+                idProyecto, idActividad, guardado.getId(),
+                "Horas registradas en actividad id=" + idActividad);
 
         return registroHorasMapper.toResponseDTO(guardado);
     }
