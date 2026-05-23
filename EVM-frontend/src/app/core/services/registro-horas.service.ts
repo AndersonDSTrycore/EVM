@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RegistroHorasRequest, RegistroHorasResponse } from '../models/registro-horas.models';
 
-const API_URL = 'http://localhost:8081/api';
+const API_URL = 'http://localhost:8082/api';
 
 @Injectable({ providedIn: 'root' })
 export class RegistroHorasService {

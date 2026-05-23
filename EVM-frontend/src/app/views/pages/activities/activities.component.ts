@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -10,6 +10,7 @@ import { ActividadService } from '../../../core/services/actividad.service';
 import { ProyectoService } from '../../../core/services/proyecto.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { IndicadorEvmService } from '../../../core/services/indicador-evm.service';
+import { WebSocketService } from '../../../core/services/web-socket.service';
 import { ActividadRequest, ActividadResponse } from '../../../core/models/actividad.models';
 import { EstadoEvm, IndicadoresEvmProyectoResponse } from '../../../core/models/indicador-evm.models';
 import { CreateEditActivityComponent } from './create-edit-activity/create-edit-activity.component';
@@ -56,11 +57,12 @@ import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
   templateUrl: './activities.component.html',
   styleUrl: './activities.component.css',
 })
-export class ActivitiesComponent implements OnInit {
+export class ActivitiesComponent implements OnInit, OnDestroy {
   private actividadService = inject(ActividadService);
   private proyectoService = inject(ProyectoService);
   private authService = inject(AuthService);
   private indicadorEvmService = inject(IndicadorEvmService);
+  private webSocketService = inject(WebSocketService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
@@ -129,6 +131,7 @@ export class ActivitiesComponent implements OnInit {
       this.inicializarDebounce();
       this.cargarIndicadores('');
     }
+    this.suscribirWebSocket();
   }
 
   cargarNombreProyecto(): void {
@@ -446,6 +449,39 @@ export class ActivitiesComponent implements OnInit {
     }
 
     return items;
+  }
+
+  ngOnDestroy(): void {
+    this.webSocketService.cancelarSuscripcion('actividades-lista-' + this.idProyecto);
+    this.webSocketService.cancelarSuscripcion('actividades-indicadores-' + this.idProyecto);
+  }
+
+  private suscribirWebSocket(): void {
+    try {
+      this.webSocketService
+        .suscribir(`/topic/proyectos/${this.idProyecto}/actividades`, 'actividades-lista-' + this.idProyecto)
+        .subscribe({
+          next: (evento) => {
+            if (evento.requiereRefresco) {
+              this.cargarActividades();
+            }
+          },
+          error: (err) => console.error('[WS] Error en suscripción actividades:', err),
+        });
+
+      this.webSocketService
+        .suscribir(`/topic/proyectos/${this.idProyecto}/indicadores`, 'actividades-indicadores-' + this.idProyecto)
+        .subscribe({
+          next: (evento) => {
+            if (evento.requiereRefresco && this.esLider) {
+              this.cargarIndicadores(this.filtroIndicadores);
+            }
+          },
+          error: (err) => console.error('[WS] Error en suscripción indicadores:', err),
+        });
+    } catch (err) {
+      console.error('[WS] No se pudo suscribir en activities:', err);
+    }
   }
 }
 

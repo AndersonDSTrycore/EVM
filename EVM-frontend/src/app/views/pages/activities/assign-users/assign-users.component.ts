@@ -4,11 +4,13 @@ import {
   Output,
   EventEmitter,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AsignacionActividadService } from '../../../../core/services/asignacion-actividad.service';
+import { WebSocketService } from '../../../../core/services/web-socket.service';
 import {
   AsignacionActividadResponse,
   UsuarioDisponibleResponse,
@@ -37,8 +39,9 @@ import { MessageService } from 'primeng/api';
   templateUrl: './assign-users.component.html',
   styleUrl: './assign-users.component.css',
 })
-export class AssignUsersComponent implements OnChanges {
+export class AssignUsersComponent implements OnChanges, OnDestroy {
   private asignacionService = inject(AsignacionActividadService);
+  private webSocketService = inject(WebSocketService);
   private messageService = inject(MessageService);
 
   @Input() visible = false;
@@ -60,10 +63,16 @@ export class AssignUsersComponent implements OnChanges {
     if (changes['visible'] && this.visible && this.actividad) {
       this.cargarDatos();
       this.seleccionados = [];
+      this.suscribirWebSocket();
     }
     if (changes['visible'] && !this.visible) {
       this.limpiar();
+      this.cancelarSuscripcionWebSocket();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.cancelarSuscripcionWebSocket();
   }
 
   cargarDatos(): void {
@@ -187,6 +196,29 @@ export class AssignUsersComponent implements OnChanges {
   cerrar(): void {
     this.visibleChange.emit(false);
     this.cerrarEvento.emit();
+  }
+
+  private suscribirWebSocket(): void {
+    if (!this.actividad) return;
+    const clave = 'asignaciones-dialog-' + this.actividad.id;
+    const canal = `/topic/actividades/${this.actividad.id}/asignaciones`;
+    try {
+      this.webSocketService.suscribir(canal, clave).subscribe({
+        next: (evento) => {
+          if (evento.requiereRefresco) {
+            this.cargarDatos();
+          }
+        },
+        error: (err) => console.error('[WS] Error en suscripción asignaciones dialog:', err),
+      });
+    } catch (err) {
+      console.error('[WS] No se pudo suscribir en assign-users:', err);
+    }
+  }
+
+  private cancelarSuscripcionWebSocket(): void {
+    if (!this.actividad) return;
+    this.webSocketService.cancelarSuscripcion('asignaciones-dialog-' + this.actividad.id);
   }
 
   private limpiar(): void {

@@ -7,7 +7,7 @@ import {
   UsuarioDisponibleResponse,
 } from '../models/asignacion.models';
 
-const API_URL = 'http://localhost:8081/api';
+const API_URL = 'http://localhost:8082/api';
 
 @Injectable({ providedIn: 'root' })
 export class AsignacionActividadService {

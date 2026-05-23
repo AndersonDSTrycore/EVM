@@ -3,15 +3,17 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { LoginRequest, LoginResponse, UsuarioSesion } from '../models/auth.models';
+import { WebSocketService } from '../services/web-socket.service';
 
 const TOKEN_KEY = 'evm_token';
 const USUARIO_KEY = 'evm_usuario';
-const API_URL = 'http://localhost:8081/api';
+const API_URL = 'http://localhost:8082/api';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private webSocketService = inject(WebSocketService);
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${API_URL}/auth/login`, request).pipe(
@@ -23,6 +25,13 @@ export class AuthService {
   }
 
   logout(): void {
+    // 1. Desconectar WebSocket antes de limpiar el token
+    try {
+      this.webSocketService.desconectar();
+    } catch (err) {
+      console.warn('[Auth] Error al desconectar WebSocket en logout:', err);
+    }
+    // 2. Limpiar sesión
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USUARIO_KEY);
     this.router.navigate(['/login']);

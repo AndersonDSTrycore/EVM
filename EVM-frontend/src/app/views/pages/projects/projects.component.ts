@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { ProyectoService } from '../../../core/services/proyecto.service';
 import { ActividadService } from '../../../core/services/actividad.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { WebSocketService } from '../../../core/services/web-socket.service';
 import { ProyectoRequest, ProyectoResponse } from '../../../core/models/proyecto.models';
 
 import { TableModule } from 'primeng/table';
@@ -52,10 +53,11 @@ import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
   templateUrl: './projects.component.html',
   styleUrl: './projects.component.css',
 })
-export class ProjectsComponent implements OnInit {
+export class ProjectsComponent implements OnInit, OnDestroy {
   private proyectoService = inject(ProyectoService);
   private actividadService = inject(ActividadService);
   private authService = inject(AuthService);
+  private webSocketService = inject(WebSocketService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -117,6 +119,26 @@ export class ProjectsComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarProyectos();
+    this.suscribirWebSocket();
+  }
+
+  ngOnDestroy(): void {
+    this.webSocketService.cancelarSuscripcion('proyectos-lista');
+  }
+
+  private suscribirWebSocket(): void {
+    try {
+      this.webSocketService.suscribir('/topic/proyectos', 'proyectos-lista').subscribe({
+        next: (evento) => {
+          if (evento.requiereRefresco) {
+            this.cargarProyectos();
+          }
+        },
+        error: (err) => console.error('[WS] Error en suscripción /topic/proyectos:', err),
+      });
+    } catch (err) {
+      console.error('[WS] No se pudo suscribir a /topic/proyectos:', err);
+    }
   }
 
   cargarProyectos(): void {
